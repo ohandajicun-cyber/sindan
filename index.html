@@ -272,6 +272,35 @@
       border-color: #c44569;
     }
 
+    .share-label {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin: 20px 0 10px;
+    }
+    .share-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .share-btn {
+      border: none;
+      border-radius: 99px;
+      padding: 12px 18px;
+      font-size: 0.88rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .share-x    { background: #000; color: #fff; }
+    .share-line { background: #06c755; color: #fff; }
+    .share-insta {
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #fff;
+    }
+
     .note {
       font-size: 0.72rem;
       color: #bbb;
@@ -316,6 +345,12 @@
     <button class="btn" onclick="retryQuiz()">もう一度診断する</button>
     <br>
     <button class="btn btn-secondary" onclick="sendEmail()">📧 メールで送信</button>
+    <div class="share-label">結果をシェアする</div>
+    <div class="share-buttons">
+      <button class="share-btn share-x" onclick="shareX()">𝕏 でシェア</button>
+      <button class="share-btn share-line" onclick="shareLINE()">💬 LINEで送る</button>
+      <button class="share-btn share-insta" onclick="shareInstagram()">📸 インスタ用コピー</button>
+    </div>
     <p class="note">※ 診断結果はお遊びです。真に受けないでね！</p>
   </div>
 
@@ -735,6 +770,31 @@ function retryQuiz() {
   document.getElementById('title-screen').style.display = 'block';
   document.getElementById('name-input').value = '';
   document.getElementById('name-input').style.borderColor = '#f0c0d0';
+}
+
+function getShareText() {
+  const score = document.getElementById('score-display').textContent;
+  const title = document.getElementById('result-title').textContent;
+  return `【エロ度診断】\n私のエロ度は ${score}/100点！\n診断結果：${title}\n\n#エロ度診断`;
+}
+
+function shareX() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+}
+
+function shareLINE() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+}
+
+function shareInstagram() {
+  const text = getShareText();
+  navigator.clipboard.writeText(text).then(() => {
+    alert('コピーしました！\nインスタグラムを開いて投稿に貼り付けてね📸');
+  }).catch(() => {
+    prompt('以下をコピーしてインスタに貼り付けてね：', text);
+  });
 }
 
 function sendEmail() {
