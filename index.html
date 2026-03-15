@@ -775,7 +775,8 @@ function retryQuiz() {
 function getShareText() {
   const score = document.getElementById('score-display').textContent;
   const title = document.getElementById('result-title').textContent;
-  return `【エロ度診断】\n私のエロ度は ${score}/100点！\n診断結果：${title}\n\n#エロ度診断`;
+  const url = 'https://ohandajicun-cyber.github.io/sindan/';
+  return `【エロ度診断】\n私のエロ度は ${score}/100点！\n診断結果：${title}\n\nあなたも試してみて👇\n${url}\n\n#エロ度診断`;
 }
 
 function shareX() {
