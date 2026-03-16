@@ -359,6 +359,13 @@
 <script>
 const questions = [
   {
+    text: "🙋 性別教えてね",
+    choices: [
+      { text: "男子", score: 0 },
+      { text: "女子", score: 0 },
+    ]
+  },
+  {
     text: "💬 気になる人に「今夜何してる？」とLINEが来た。どう返す？",
     choices: [
       { text: "「家にいるよ～」とそのまま返す", score: 1 },
@@ -451,6 +458,7 @@ const questions = [
       { text: "クンニ",          score: 4 },
       { text: "エッチ（ゴム有）", score: 5 },
       { text: "エッチ（ゴム無）", score: 5 },
+      { text: "エッチ（中だし）", score: 5 },
     ]
   },
   {
@@ -509,13 +517,13 @@ const questions = [
     choices: [
       { text: "まったくしない", score: 1 },
       { text: "月に1～4回", score: 2 },
-      { text: "週1回", score: 3 },
-      { text: "週2～4回", score: 4 },
+      { text: "週に2～3回", score: 3 },
+      { text: "週に4～6回", score: 4 },
       { text: "毎日", score: 5 },
     ]
   },
   {
-    text: "👀 自分の体を見ておかずにされるのは好き？",
+    text: "👀 自分の体を見て興奮してくれるのはうれしい？",
     choices: [
       { text: "どちらでもない", score: 2 },
       { text: "嫌い",           score: 1 },
@@ -523,7 +531,7 @@ const questions = [
     ]
   },
   {
-    text: "😳 自分のオナニーを見てほしい時がある？",
+    text: "😳 自分のオナニーを見られるのは興奮する？",
     choices: [
       { text: "ない",           score: 1 },
       { text: "どちらでもない", score: 2 },
@@ -539,10 +547,24 @@ const questions = [
     ]
   },
   {
+    text: "👁️ どこまでなら見せれる？（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "どこも見せれない", score: 1 },
+      { text: "肩",               score: 2 },
+      { text: "ブラ",             score: 3 },
+      { text: "パンツ",           score: 3 },
+      { text: "胸",               score: 4 },
+      { text: "足",               score: 3 },
+      { text: "あそこ",           score: 5 },
+    ]
+  },
+  {
     text: "👙 持っている下着の色は？（複数選択可）",
     type: 'multi',
     choices: [
       { text: "白系",   score: 1 },
+      { text: "ピンク系", score: 2 },
       { text: "青系",   score: 2 },
       { text: "緑系",   score: 2 },
       { text: "黄色系", score: 3 },
