@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>乳がん早期発見サポート</title>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      background: linear-gradient(135deg, #e8f4fd, #c8e6f7, #fce4ec);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+
+    /* ステップインジケーター */
+    .steps-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 260px;
+      margin: 0 auto;
+    }
+    .step-dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #e0e0e0; color: #aaa;
+      font-size: 0.85rem; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s; flex-shrink: 0;
+    }
+    .step-dot.active { background: #c0392b; color: white; }
+    .step-dot.done   { background: #27ae60; color: white; }
+    .step-line { flex: 1; height: 3px; background: #e0e0e0; max-width: 80px; transition: background 0.3s; }
+    .step-line.done { background: #27ae60; }
+    .steps-labels {
+      display: flex; justify-content: space-between;
+      max-width: 500px; margin: 6px auto 0;
+    }
+    .steps-row { max-width: 500px; }
+    .step-lbl { font-size: 0.7rem; color: #aaa; text-align: center; width: 36px; transition: color 0.3s; }
+    .step-lbl.active { color: #c0392b; font-weight: bold; }
+    .step-lbl.done   { color: #27ae60; }
+
+    .header { text-align: center; margin-bottom: 28px; }
+    .header .icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+    .header h1 { font-size: 1.6rem; color: #c0392b; margin-bottom: 4px; }
+    .header .subtitle { font-size: 0.85rem; color: #888; line-height: 1.6; }
+
+    .notice {
+      background: #fff3cd; border: 1px solid #ffc107;
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 0.82rem; color: #856404;
+      margin-bottom: 24px; line-height: 1.7;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 0.9rem; font-weight: bold;
+      color: #333; margin-bottom: 8px;
+    }
+    .form-group label .required { color: #e74c3c; margin-left: 4px; font-size: 0.78rem; }
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group textarea,
+    .form-group select {
+      width: 100%; padding: 13px 16px; font-size: 0.95rem;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      outline: none; transition: border-color 0.2s; font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: #c0392b; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+
+    .summary-box {
+      background: #f9f9f9; border: 1px solid #eee;
+      border-radius: 12px; padding: 12px 18px;
+      margin-bottom: 20px; font-size: 0.88rem; color: #555; line-height: 1.9;
+    }
+
+    /* 送信セクション（画像 / 動画 分割） */
+    .send-section {
+      border: 2px solid #f0f0f0;
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-bottom: 18px;
+    }
+    .send-section.image-section { border-color: #fce4ec; }
+    .send-section.video-section { border-color: #e3f2fd; }
+
+    .section-title {
+      font-size: 1rem; font-weight: bold;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .section-title .badge {
+      font-size: 0.7rem; font-weight: bold;
+      padding: 2px 10px; border-radius: 99px;
+    }
+    .image-section .section-title .badge { background: #fce4ec; color: #c0392b; }
+    .video-section .section-title .badge { background: #e3f2fd; color: #1565c0; }
+
+    /* 送信済みバナー */
+    .sent-banner {
+      display: none;
+      background: #f0fff4; border: 1px solid #b2dfdb;
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 0.85rem; color: #27ae60; font-weight: bold;
+      text-align: center; margin-bottom: 12px;
+    }
+
+    /* アップロードエリア */
+    .upload-area {
+      border: 2px dashed #e0e0e0; border-radius: 12px;
+      padding: 22px 16px; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: #fafafa;
+    }
+    .upload-area:hover { border-color: #c0392b; background: #fff5f5; }
+    .upload-area.has-file { border-color: #27ae60; background: #f0fff4; }
+    .upload-area input[type="file"] { display: none; }
+    .upload-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .upload-text { font-size: 0.85rem; color: #666; line-height: 1.6; }
+    .upload-text strong { color: #c0392b; }
+    .file-name { margin-top: 8px; font-size: 0.8rem; color: #27ae60; font-weight: bold; }
+
+    .media-preview {
+      display: none; max-width: 100%; max-height: 200px;
+      border-radius: 10px; margin-top: 10px; border: 1px solid #e0e0e0;
+    }
+
+    /* ボタン */
+    .btn-send-image {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 14px;
+    }
+    .btn-send-image:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(192,57,43,0.35); }
+    .btn-send-image:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-send-video {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #1976d2, #1565c0);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 14px;
+    }
+    .btn-send-video:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(21,101,192,0.35); }
+    .btn-send-video:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-primary {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1.05rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(192,57,43,0.35); }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-back {
+      width: 100%; padding: 13px; background: white; color: #888;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 0.95rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px;
+    }
+    .btn-back:hover { background: #f9f9f9; border-color: #ccc; }
+    .btn-next {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #27ae60, #1e8449);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1.05rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px;
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(39,174,96,0.35); }
+
+    .error-msg { display: none; color: #e74c3c; font-size: 0.8rem; margin-top: 6px; }
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 22px 0; }
+
+    .privacy-note { font-size: 0.75rem; color: #aaa; text-align: center; line-height: 1.7; margin-top: 14px; }
+
+    /* 完了 */
+    #screen-done { text-align: center; padding: 16px 0; }
+    #screen-done .done-icon { font-size: 4rem; display: block; margin-bottom: 14px; }
+    #screen-done h2 { font-size: 1.4rem; color: #27ae60; margin-bottom: 10px; }
+    #screen-done p { font-size: 0.9rem; color: #555; line-height: 1.8; margin-bottom: 24px; }
+    .btn-restart {
+      background: white; color: #c0392b; border: 2px solid #c0392b;
+      border-radius: 12px; padding: 13px 36px;
+      font-size: 0.95rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-restart:hover { background: #fff5f5; }
+
+    .loading-spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 3px solid rgba(255,255,255,0.4); border-top-color: white;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-bar-wrap {
+      background: #f0f0f0; border-radius: 99px;
+      height: 6px; margin-top: 8px; overflow: hidden; display: none;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #1976d2, #42a5f5);
+      border-radius: 99px; transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="icon">🎗️</span>
+    <h1>乳がん早期発見サポート</h1>
+    <p class="subtitle">担当医師が確認し、ご連絡いたします。</p>
+  </div>
+
+  <!-- ステップUI -->
+  <div id="step-ui">
+    <div class="steps-row">
+      <div class="step-dot active" id="dot1">1</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-dot" id="dot2">2</div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-dot" id="dot3">3</div>
+      <div class="step-line" id="line3"></div>
+      <div class="step-dot" id="dot4">4</div>
+    </div>
+    <div class="steps-labels">
+      <div class="step-lbl active" id="lbl1">基本情報</div>
+      <div class="step-lbl" id="lbl2">症状</div>
+      <div class="step-lbl" id="lbl3">画像・動画</div>
+      <div class="step-lbl" id="lbl4">次のステップ</div>
+    </div>
+  </div>
+
+  <!-- ステップ1：基本情報 -->
+  <div class="screen active" id="screen-step1">
+    <div class="notice" style="margin-top:24px;">
+      ⚠️ <strong>ご注意：</strong> このツールは医師による遠隔確認サポート用です。正式な診断は対面診察で行われます。
+    </div>
+
+    <div class="form-group">
+      <label>お名前 <span class="required">必須</span></label>
+      <input type="text" id="input-name" placeholder="例：山田 花子" maxlength="50">
+      <p class="error-msg" id="err-name">お名前を入力してください</p>
+    </div>
+
+    <div class="form-group">
+      <label>年齢 <span class="required">必須</span></label>
+      <input type="number" id="input-age" placeholder="例：42" min="10" max="110">
+      <p class="error-msg" id="err-age">年齢を正しく入力してください（10〜110）</p>
+    </div>
+
+    <hr class="divider">
+    <button class="btn-primary" onclick="goToStep2()">次へ →</button>
+  </div>
+
+  <!-- ステップ2：症状・送信 -->
+  <div class="screen" id="screen-step2">
+    <div class="summary-box" id="summary-box" style="margin-top:24px;"></div>
+
+    <div class="form-group">
+      <label>気になる部位 <span class="required">必須</span></label>
+      <select id="input-location">
+        <option value="">-- 選択してください --</option>
+        <option value="右胸（上部）">右胸（上部）</option>
+        <option value="右胸（下部）">右胸（下部）</option>
+        <option value="右胸（内側）">右胸（内側）</option>
+        <option value="右胸（外側）">右胸（外側）</option>
+        <option value="左胸（上部）">左胸（上部）</option>
+        <option value="左胸（下部）">左胸（下部）</option>
+        <option value="左胸（内側）">左胸（内側）</option>
+        <option value="左胸（外側）">左胸（外側）</option>
+        <option value="右わきの下">右わきの下</option>
+        <option value="左わきの下">左わきの下</option>
+        <option value="その他">その他</option>
+      </select>
+      <p class="error-msg" id="err-location">部位を選択してください</p>
+    </div>
+
+    <div class="form-group">
+      <label>症状の詳細（任意）</label>
+      <textarea id="input-symptoms" placeholder="例：2週間前からしこりのようなものを感じます。痛みはありません。"></textarea>
+    </div>
+
+    <hr class="divider">
+    <button class="btn-back" onclick="goToStep1()">← 戻る</button>
+    <button class="btn-next" onclick="goToStep3()">次へ →</button>
+  </div>
+
+  <!-- ステップ3：画像・動画アップロード -->
+  <div class="screen" id="screen-step3">
+    <div class="summary-box" id="summary-box2" style="margin-top:24px;"></div>
+
+    <!-- 画像送信セクション -->
+    <div class="send-section image-section">
+      <div class="section-title">
+        🖼️ 画像を送信
+        <span class="badge">→ 担当医師へ</span>
+      </div>
+      <div class="sent-banner" id="img-sent-banner">✅ 画像を選択済み</div>
+      <div class="upload-area" id="upload-area-img" onclick="document.getElementById('input-image').click()">
+        <input type="file" id="input-image" accept="image/*" onchange="handleFileSelect(event,'img')">
+        <span class="upload-icon">📷</span>
+        <div class="upload-text">
+          <strong>クリックして画像を選択</strong><br>
+          JPEG / PNG / HEIC（最大8MB）
+        </div>
+        <p class="file-name" id="file-name-img"></p>
+      </div>
+      <img id="preview-img" class="media-preview" alt="プレビュー">
+      <p class="error-msg" id="err-image">画像を選択してください</p>
+      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+        <img src="./乳がん検査.jpg" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
+          ①正面から両腕を上げた状態　②立った状態で触診　③横になって触診　④正面から腕を当てた状態
+        </p>
+      </div>
+    </div>
+
+    <!-- 動画送信セクション -->
+    <div class="send-section video-section">
+      <div class="section-title">
+        🎥 動画を送信
+        <span class="badge">→ Google ドライブへ</span>
+      </div>
+      <div class="sent-banner" id="video-sent-banner">✅ 動画を選択済み</div>
+      <div class="upload-area" id="upload-area-video" onclick="document.getElementById('input-video').click()">
+        <input type="file" id="input-video" accept="video/*" onchange="handleFileSelect(event,'video')">
+        <span class="upload-icon">🎬</span>
+        <div class="upload-text">
+          <strong>クリックして動画を選択</strong><br>
+          MP4 / MOV（最大5分・500MB）<br>
+          <small style="color:#aaa;">※ 30MB超は自動圧縮してから送信します</small>
+        </div>
+        <p class="file-name" id="file-name-video"></p>
+      </div>
+      <video id="preview-video" class="media-preview" controls></video>
+      <p class="error-msg" id="err-video">動画を選択してください</p>
+      <div style="margin-top:16px; padding:14px; background:#f0f6ff; border-radius:12px; border:1px solid #d0e4f7;">
+        <p style="font-size:0.8rem; font-weight:bold; color:#1565c0; margin-bottom:8px;">📋 このような動画を撮影してください</p>
+        <img src="./乳がん検査.jpg" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
+          ①正面から両腕を上げた状態　②立った状態で触診　③横になって触診　④正面から腕を当てた状態
+        </p>
+      </div>
+      <div id="video-send-error" style="display:none; margin-top:12px; background:#fff0f0; border:1px solid #f5c6c6; border-radius:10px; padding:12px 14px; font-size:0.82rem; color:#c0392b; line-height:1.6;"></div>
+      <div id="compress-status" style="display:none; margin-top:14px; background:#f0f6ff; border:1px solid #b3d4f5; border-radius:12px; padding:14px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:0.85rem; font-weight:bold; color:#1565c0;">⚙️ 圧縮中... <span id="compress-pct">0%</span></span>
+          <span style="font-size:0.78rem; color:#888;" id="compress-remaining"></span>
+        </div>
+        <div style="background:#dce8f7; border-radius:99px; height:8px; overflow:hidden;">
+          <div id="compress-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#1976d2,#42a5f5); border-radius:99px; transition:width 0.3s;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+          <span style="font-size:0.75rem; color:#888;">動画と同じ時間がかかります</span>
+          <button onclick="cancelCompression()" style="font-size:0.78rem; color:#e74c3c; background:none; border:1px solid #e74c3c; border-radius:8px; padding:4px 12px; cursor:pointer;">キャンセル</button>
+        </div>
+      </div>
+      <div class="progress-bar-wrap" id="video-progress-wrap">
+        <div class="progress-bar-fill" id="video-progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- 送信エラー表示 -->
+    <div id="step3-error" style="display:none; margin-top:12px; background:#fff0f0; border:1px solid #f5c6c6; border-radius:10px; padding:12px 14px; font-size:0.85rem; color:#c0392b; line-height:1.6;"></div>
+
+    <hr class="divider">
+    <button class="btn-back" onclick="goBackToStep2()">← 戻る</button>
+    <button class="btn-next" id="btn-next-step3" onclick="sendAndProceed()">次へ →</button>
+    <p class="privacy-note">送信された情報は担当医師のみが閲覧します。第三者への提供は行いません。</p>
+  </div>
+
+  <!-- ステップ4：次のステップ案内 -->
+  <div class="screen" id="screen-step4">
+    <div style="text-align:center; margin-top:24px; margin-bottom:24px;">
+      <p style="font-size:0.85rem; color:#555; line-height:1.8; margin-bottom:20px;">
+        画像・動画の送信後は、下記より詳細な相談や<br>予約のお申し込みが可能です。
+      </p>
+      <div id="url-card"></div>
+    </div>
+    <button class="btn-back" onclick="goBackToStep3()">← 戻る</button>
+  </div>
+
+  <!-- 完了 -->
+  <div class="screen" id="screen-done">
+    <span class="done-icon">✅</span>
+    <h2>送信が完了しました</h2>
+    <p>
+      情報が担当医師に送信されました。<br>
+      確認後、ご連絡いたします。<br><br>
+      <strong>緊急の場合は直接医療機関へお問い合わせください。</strong>
+    </p>
+    <button class="btn-restart" onclick="resetAll()">新しい相談を送る</button>
+  </div>
+
+</div>
+
+<script>
+  // ▼▼▼ Google Apps Script をデプロイ後、ウェブアプリURLをここに貼り付け ▼▼▼
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOtR7nzexvwyU_oND54WrWiclQTpCT72fWGTPzjwErvE6eGyYBXlclH8mkAB3oT1hC7g/exec';
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+  const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1483068719780331591/HzuTzG8neJOC_yxz7GshVEouSCgo7MJvk-K5LOTeIcasrzUvswoypueZ-uc0hK2QfJ1p';
+
+  let selectedImage = null;
+  let selectedVideo = null;
+  let imageSentCount = 0;
+  let videoSentCount = 0;
+  let ffmpegInstance  = null;
+  let cancelRequested = false;
+
+  // ---- ステップ管理 ----
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function updateStepUI(step) {
+    const dots  = [1,2,3,4].map(n => document.getElementById('dot'+n));
+    const lines = [1,2,3].map(n => document.getElementById('line'+n));
+    const lbls  = [1,2,3,4].map(n => document.getElementById('lbl'+n));
+    dots.forEach((d,i)  => { d.className = 'step-dot'; d.textContent = i+1; });
+    lines.forEach(l     => { l.className = 'step-line'; });
+    lbls.forEach(l      => { l.className = 'step-lbl'; });
+    for (let i = 0; i < step - 1; i++) {
+      dots[i].className = 'step-dot done'; dots[i].textContent = '✓';
+      if (lines[i]) lines[i].className = 'step-line done';
+      lbls[i].className = 'step-lbl done';
+    }
+    dots[step-1].className = 'step-dot active';
+    lbls[step-1].className = 'step-lbl active';
+  }
+
+  function goToStep3() {
+    const loc = document.getElementById('input-location').value;
+    if (!loc) {
+      document.getElementById('err-location').style.display = 'block';
+      document.getElementById('input-location').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    document.getElementById('err-location').style.display = 'none';
+    const name = document.getElementById('input-name').value.trim();
+    const age  = document.getElementById('input-age').value;
+    document.getElementById('summary-box2').innerHTML =
+      `<strong>お名前：</strong>${name}　／　<strong>年齢：</strong>${age}歳　／　<strong>部位：</strong>${loc}`;
+    updateStepUI(3);
+    showScreen('screen-step3');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep4() {
+    const url    = (imageSentCount >= 5 && videoSentCount >= 5)
+      ? 'https://www.kotoni-breast.or.jp/'
+      : 'https://www.ssb-c.com/';
+    const domain = new URL(url).hostname;
+    document.getElementById('url-card').innerHTML = `
+      <a href="${url}" target="_blank" style="text-decoration:none; display:block;">
+        <div style="border:2px solid #e0e0e0; border-radius:16px; overflow:hidden; cursor:pointer;"
+          onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'"
+          onmouseout="this.style.boxShadow='none'">
+          <img src="https://image.thum.io/get/width/540/crop/400/url/${url}"
+            alt="プレビュー" style="width:100%; display:block; border-bottom:1px solid #eee;"
+            onerror="this.style.display='none'">
+          <div style="padding:14px 18px; background:#fafafa; text-align:left;">
+            <div style="font-size:0.75rem; color:#aaa; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+              <img src="https://www.google.com/s2/favicons?domain=${domain}" width="14" height="14" alt="" style="vertical-align:middle;">
+              ${domain}
+            </div>
+            <div style="font-size:0.95rem; font-weight:bold; color:#1565c0;">${url}</div>
+            <div style="font-size:0.8rem; color:#888; margin-top:4px;">タップして開く →</div>
+          </div>
+        </div>
+      </a>`;
+    updateStepUI(4);
+    showScreen('screen-step4');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goBackToStep2() {
+    cancelRequested = true;
+    document.getElementById('img-sent-banner').style.display   = 'none';
+    document.getElementById('video-sent-banner').style.display = 'none';
+    document.getElementById('video-progress-wrap').style.display = 'none';
+    document.getElementById('video-progress-bar').style.width = '0%';
+    document.getElementById('video-send-error').style.display = 'none';
+    document.getElementById('compress-status').style.display  = 'none';
+    document.getElementById('compress-pct').textContent = '0%';
+    document.getElementById('compress-bar').style.width = '0%';
+    document.getElementById('upload-area-img').classList.remove('has-file');
+    document.getElementById('upload-area-video').classList.remove('has-file');
+    document.getElementById('file-name-img').textContent   = '';
+    document.getElementById('file-name-video').textContent = '';
+    document.getElementById('preview-img').style.display   = 'none';
+    document.getElementById('preview-video').style.display = 'none';
+    document.getElementById('input-image').value = '';
+    document.getElementById('input-video').value = '';
+    const btnNext = document.getElementById('btn-next-step3');
+    btnNext.disabled = false;
+    btnNext.innerHTML = '次へ →';
+    selectedImage = null;
+    selectedVideo = null;
+    updateStepUI(2);
+    showScreen('screen-step2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goBackToStep3() {
+    updateStepUI(3);
+    showScreen('screen-step3');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep2() {
+    const name = document.getElementById('input-name').value.trim();
+    const age  = parseInt(document.getElementById('input-age').value);
+    let ok = true;
+    if (!name) { document.getElementById('err-name').style.display = 'block'; ok = false; }
+    else        { document.getElementById('err-name').style.display = 'none'; }
+    if (!age || age < 10 || age > 110) { document.getElementById('err-age').style.display = 'block'; ok = false; }
+    else                               { document.getElementById('err-age').style.display = 'none'; }
+    if (!ok) return;
+
+    document.getElementById('summary-box').innerHTML =
+      `<strong>お名前：</strong>${name}　／　<strong>年齢：</strong>${age}歳`;
+    updateStepUI(2);
+    showScreen('screen-step2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep1() {
+    updateStepUI(1);
+    showScreen('screen-step1');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- ファイル選択 ----
+  function handleFileSelect(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const maxMB   = type === 'img' ? 8 : 500;
+    const maxSize = maxMB * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`ファイルサイズが${maxMB}MBを超えています。別のファイルを選択してください。`);
+      event.target.value = '';
+      return;
+    }
+
+    if (type === 'img') {
+      selectedImage = file;
+      document.getElementById('file-name-img').textContent = `選択済み: ${file.name}`;
+      document.getElementById('upload-area-img').classList.add('has-file');
+      document.getElementById('err-image').style.display = 'none';
+      document.getElementById('img-sent-banner').style.display = 'block';
+      const img = document.getElementById('preview-img');
+      img.src = URL.createObjectURL(file);
+      img.style.display = 'block';
+    } else {
+      selectedVideo = file;
+      document.getElementById('file-name-video').textContent = `選択済み: ${file.name}`;
+      document.getElementById('upload-area-video').classList.add('has-file');
+      document.getElementById('err-video').style.display = 'none';
+      document.getElementById('video-sent-banner').style.display = 'block';
+      const video = document.getElementById('preview-video');
+      video.src = URL.createObjectURL(file);
+      video.style.display = 'block';
+    }
+    hideStep3Error();
+  }
+
+  // ---- 次へ（送信してステップ4へ）----
+  async function sendAndProceed() {
+    if (!selectedImage && !selectedVideo) {
+      showStep3Error('画像または動画を少なくとも1つ選択してください。');
+      return;
+    }
+    hideStep3Error();
+
+    const btn = document.getElementById('btn-next-step3');
+    btn.disabled = true;
+
+    try {
+      if (selectedImage) {
+        btn.innerHTML = '<span class="loading-spinner"></span>画像を送信中...';
+        await doSendImage();
+        imageSentCount++;
+      }
+      if (selectedVideo) {
+        btn.innerHTML = '<span class="loading-spinner"></span>動画を送信中...';
+        await doSendVideo(btn);
+        videoSentCount++;
+      }
+      goToStep4();
+    } catch (e) {
+      if (e.message !== 'ABORTED') showStep3Error('送信に失敗しました: ' + e.message);
+      btn.disabled = false;
+      btn.innerHTML = '次へ →';
+      document.getElementById('compress-status').style.display = 'none';
+      document.getElementById('video-progress-wrap').style.display = 'none';
+      document.getElementById('video-progress-bar').style.width = '0%';
+    }
+  }
+
+  function showStep3Error(msg) {
+    const el = document.getElementById('step3-error');
+    el.textContent = '⚠️ ' + msg;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function hideStep3Error() {
+    document.getElementById('step3-error').style.display = 'none';
+  }
+
+  // ---- 画像送信（内部）→ Discord ----
+  async function doSendImage() {
+    const name     = document.getElementById('input-name').value.trim();
+    const age      = document.getElementById('input-age').value;
+    const location = document.getElementById('input-location').value;
+    const symptoms = document.getElementById('input-symptoms').value.trim() || '（記入なし）';
+    const now      = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+    const formData = new FormData();
+    formData.append('file', selectedImage, selectedImage.name);
+    formData.append('payload_json', JSON.stringify({
+      embeds: [{
+        title: '🎗️ 乳がん早期発見サポート — 画像相談',
+        color: 0xc0392b,
+        fields: [
+          { name: '👤 お名前',       value: name,      inline: true },
+          { name: '🎂 年齢',          value: `${age}歳`, inline: true },
+          { name: '📍 気になる部位', value: location,   inline: false },
+          { name: '📝 症状の詳細',   value: symptoms,   inline: false },
+        ],
+        image: { url: 'attachment://' + selectedImage.name },
+        footer: { text: `送信日時: ${now}` },
+        timestamp: new Date().toISOString(),
+      }]
+    }));
+
+    const res = await fetch(DISCORD_WEBHOOK, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+  }
+
+  // ---- 動画圧縮 ----
+  function cancelCompression() {
+    cancelRequested = true;
+    document.getElementById('compress-status').style.display = 'none';
+    document.getElementById('compress-pct').textContent = '0%';
+    document.getElementById('compress-bar').style.width = '0%';
+  }
+
+  async function compressVideo(file, onProgress) {
+    cancelRequested = false;
+    const { createFFmpeg, fetchFile } = FFmpeg;
+
+    // ffmpegインスタンスを初期化（初回のみ）
+    if (!ffmpegInstance) {
+      ffmpegInstance = createFFmpeg({
+        log: false,
+        corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+        progress: ({ ratio }) => {
+          if (!cancelRequested) onProgress(Math.max(0, Math.min(ratio, 1)));
+        },
+      });
+    }
+
+    // wasmの読み込み（初回のみ ~30MB のダウンロードが発生）
+    if (!ffmpegInstance.isLoaded()) {
+      document.getElementById('compress-remaining').textContent = 'ffmpegを読み込み中（初回のみ）...';
+      await ffmpegInstance.load();
+    }
+
+    if (cancelRequested) throw new Error('ABORTED');
+
+    const ext        = (file.name.split('.').pop() || 'mp4').toLowerCase();
+    const inputName  = `input.${ext}`;
+    const outputName = 'output.mp4';
+
+    ffmpegInstance.FS('writeFile', inputName, await fetchFile(file));
+
+    await ffmpegInstance.run(
+      '-i',        inputName,
+      '-vf',       'scale=1280:-2',   // 最大1280px幅にリサイズ
+      '-c:v',      'libx264',
+      '-crf',      '28',              // 画質（低いほど高画質・大容量）
+      '-preset',   'ultrafast',       // 最速エンコード
+      '-c:a',      'aac',
+      '-b:a',      '96k',
+      '-movflags', 'faststart',
+      outputName
+    );
+
+    if (cancelRequested) {
+      try { ffmpegInstance.FS('unlink', inputName); ffmpegInstance.FS('unlink', outputName); } catch(e) {}
+      throw new Error('ABORTED');
+    }
+
+    const data = ffmpegInstance.FS('readFile', outputName);
+    try { ffmpegInstance.FS('unlink', inputName); ffmpegInstance.FS('unlink', outputName); } catch(e) {}
+
+    return new Blob([data.buffer], { type: 'video/mp4' });
+  }
+
+  // ---- 動画送信（内部）→ Google Drive（Apps Script経由） ----
+  async function doSendVideo(btn) {
+    const progressWrap = document.getElementById('video-progress-wrap');
+    const progressBar  = document.getElementById('video-progress-bar');
+
+    const name     = document.getElementById('input-name').value.trim();
+    const age      = document.getElementById('input-age').value;
+    const location = document.getElementById('input-location').value;
+    const symptoms = document.getElementById('input-symptoms').value.trim() || '（記入なし）';
+    const now      = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+    try {
+      // 30MB超は圧縮
+      let fileToSend = selectedVideo;
+      let sendName   = selectedVideo.name;
+
+      if (selectedVideo.size > 30 * 1024 * 1024) {
+        btn.innerHTML = '<span class="loading-spinner"></span>圧縮中...';
+        document.getElementById('compress-status').style.display = 'block';
+
+        const compressStart = Date.now();
+        try {
+          const compressed = await compressVideo(selectedVideo, (pct) => {
+            const p = Math.round(pct * 100);
+            document.getElementById('compress-pct').textContent = p + '%';
+            document.getElementById('compress-bar').style.width = p + '%';
+            if (pct > 0.02) {
+              const elapsed = (Date.now() - compressStart) / 1000;
+              const remSec  = Math.round(elapsed / pct * (1 - pct));
+              const remMin  = Math.floor(remSec / 60);
+              const remS    = remSec % 60;
+              document.getElementById('compress-remaining').textContent =
+                remMin > 0 ? `残り約${remMin}分${remS}秒` : `残り約${remSec}秒`;
+            }
+          });
+          fileToSend = compressed;
+          sendName   = selectedVideo.name.replace(/\.[^.]+$/, '') + '_compressed.mp4';
+        } catch (e) {
+          document.getElementById('compress-status').style.display = 'none';
+          throw e; // sendAndProceed に伝播
+        }
+        document.getElementById('compress-status').style.display = 'none';
+      }
+
+      if (btn) btn.innerHTML = '<span class="loading-spinner"></span>動画をアップロード中...';
+      progressWrap.style.display = 'block';
+
+      // Base64変換
+      const base64 = await fileToBase64WithProgress(fileToSend, (pct) => {
+        progressBar.style.width = (pct * 0.7) + '%';
+      });
+
+      progressBar.style.width = '80%';
+
+      const payload = {
+        data:      base64,
+        fileName:  sendName,
+        mimeType:  fileToSend.type || 'video/webm',
+        name, age, location, symptoms,
+        timestamp: now,
+      };
+
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body:   JSON.stringify(payload),
+        // Content-Type を省略することでCORSプリフライトを回避
+      });
+
+      progressBar.style.width = '100%';
+
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || '不明なエラー');
+
+      progressWrap.style.display = 'none';
+      progressBar.style.width = '0%';
+    } catch (e) {
+      progressWrap.style.display = 'none';
+      progressBar.style.width = '0%';
+      throw e; // sendAndProceed に伝播
+    }
+  }
+
+  function showVideoError(msg) {
+    const el = document.getElementById('video-send-error');
+    el.textContent = '⚠️ ' + msg;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => { el.style.display = 'none'; }, 8000);
+  }
+
+  // Base64変換（進捗コールバック付き）
+  function fileToBase64WithProgress(file, onProgress) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+      reader.onload     = (e) => resolve(e.target.result.split(',')[1]);
+      reader.onerror    = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+
+  // ---- リセット ----
+  function resetAll() {
+    ['input-name','input-age','input-symptoms'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('input-location').value = '';
+    document.getElementById('input-image').value  = '';
+    document.getElementById('input-video').value  = '';
+    document.getElementById('file-name-img').textContent   = '';
+    document.getElementById('file-name-video').textContent = '';
+    document.getElementById('preview-img').style.display   = 'none';
+    document.getElementById('preview-video').style.display = 'none';
+    document.getElementById('preview-video').src = '';
+    document.getElementById('upload-area-img').classList.remove('has-file');
+    document.getElementById('upload-area-video').classList.remove('has-file');
+    document.getElementById('img-sent-banner').style.display   = 'none';
+    document.getElementById('video-sent-banner').style.display = 'none';
+    document.getElementById('video-progress-wrap').style.display = 'none';
+    document.getElementById('video-progress-bar').style.width = '0%';
+    const btnNext3 = document.getElementById('btn-next-step3');
+    btnNext3.disabled = false;
+    btnNext3.innerHTML = '次へ →';
+    selectedImage = null;
+    selectedVideo = null;
+    imageSentCount = 0;
+    videoSentCount = 0;
+
+    document.getElementById('step-ui').style.display = 'block';
+    updateStepUI(1);
+    showScreen('screen-step1');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
