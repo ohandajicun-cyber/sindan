@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>エロ度診断</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      background: linear-gradient(135deg, #ff6b9d, #c44569, #f8b500);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    /* ===== TITLE SCREEN ===== */
+    #title-screen h1 {
+      font-size: 2.4rem;
+      color: #c44569;
+      margin-bottom: 8px;
+    }
+    #title-screen .subtitle {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+    }
+    #title-screen .mascot {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      display: block;
+    }
+    #title-screen p {
+      color: #555;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+
+    /* ===== QUESTION SCREEN ===== */
+    #question-screen { display: none; }
+
+    .progress-bar-wrap {
+      background: #f0f0f0;
+      border-radius: 99px;
+      height: 10px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b9d, #f8b500);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    .q-number {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    .q-text {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .choice-btn {
+      background: #fff;
+      border: 2px solid #f0c0d0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .choice-btn:hover {
+      background: #fff0f5;
+      border-color: #c44569;
+      color: #c44569;
+      transform: translateY(-2px);
+    }
+    .choice-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ===== MULTI-SELECT ===== */
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 2px solid #f0c0d0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      user-select: none;
+    }
+    .check-label:hover {
+      background: #fff0f5;
+      border-color: #c44569;
+      color: #c44569;
+    }
+    .check-label.selected {
+      background: #fff0f5;
+      border-color: #c44569;
+      color: #c44569;
+      font-weight: bold;
+    }
+    .check-label input[type="checkbox"] { display: none; }
+    .check-box {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f0c0d0;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .check-label.selected .check-box {
+      background: #c44569;
+      border-color: #c44569;
+      color: white;
+    }
+    .multi-hint {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .btn-next {
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    /* ===== RESULT SCREEN ===== */
+    #result-screen { display: none; }
+    .result-icon { font-size: 5rem; margin-bottom: 16px; display: block; }
+    .result-label {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #c44569;
+      margin-bottom: 6px;
+    }
+    .score-display {
+      font-size: 3.5rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #ff6b9d, #f8b500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+    .score-label { font-size: 0.85rem; color: #aaa; margin-bottom: 20px; }
+
+    .meter-wrap {
+      background: #f0f0f0;
+      border-radius: 99px;
+      height: 20px;
+      margin: 0 auto 24px;
+      max-width: 340px;
+      overflow: hidden;
+    }
+    .meter-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #ffb3cc, #ff6b9d, #c44569);
+      transition: width 1s cubic-bezier(.17,.84,.44,1);
+      width: 0%;
+    }
+
+    .result-desc {
+      background: #fff8fa;
+      border-left: 4px solid #ff6b9d;
+      border-radius: 8px;
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+    .tag {
+      background: #fff0f5;
+      color: #c44569;
+      border: 1px solid #f5c0d0;
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 0.8rem;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      background: linear-gradient(135deg, #ff6b9d, #c44569);
+      color: white;
+      border: none;
+      border-radius: 99px;
+      padding: 16px 40px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-block;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(196,69,105,0.35);
+    }
+    .btn-secondary {
+      background: white;
+      color: #c44569;
+      border: 2px solid #c44569;
+      margin-top: 12px;
+    }
+    .btn-secondary:hover {
+      background: #fff0f5;
+      box-shadow: 0 4px 12px rgba(196,69,105,0.15);
+    }
+
+    #name-input {
+      display: block;
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1rem;
+      border: 2px solid #f0c0d0;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+    #name-input:focus {
+      border-color: #c44569;
+    }
+
+    .share-label {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin: 20px 0 10px;
+    }
+    .share-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .share-btn {
+      border: none;
+      border-radius: 99px;
+      padding: 12px 18px;
+      font-size: 0.88rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .share-x    { background: #000; color: #fff; }
+    .share-line { background: #06c755; color: #fff; }
+    .share-insta {
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #fff;
+    }
+
+    .note {
+      font-size: 0.72rem;
+      color: #bbb;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TITLE -->
+  <div id="title-screen">
+    <span class="mascot">💋</span>
+    <h1>エロ度診断</h1>
+    <p class="subtitle">あなたの隠れた本性を暴く！</p>
+    <p>10の質問に答えると、あなたのエロ度が判明します。<br>正直に答えるほど精度が上がりますよ？</p>
+    <input type="text" id="name-input" placeholder="あなたの名前を入力してください" maxlength="30">
+    <button class="btn" onclick="startQuiz()">診断スタート ▶</button>
+    <p class="note">※ これはお遊びの診断です。科学的根拠はありません。</p>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="question-screen">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p class="q-number" id="q-number">質問 1 / 22</p>
+    <p class="q-text" id="q-text"></p>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen">
+    <span class="result-icon" id="result-icon"></span>
+    <p class="result-label">あなたのエロ度は…</p>
+    <div class="score-display" id="score-display"></div>
+    <p class="score-label">/ 100点</p>
+    <div class="meter-wrap"><div class="meter-bar" id="meter-bar"></div></div>
+    <p class="result-title" id="result-title"></p>
+    <div class="result-desc" id="result-desc"></div>
+    <div class="tags" id="result-tags"></div>
+    <button class="btn" onclick="retryQuiz()">もう一度診断する</button>
+    <br>
+    <button class="btn btn-secondary" onclick="sendEmail()">📧 メールで送信</button>
+    <div class="share-label">結果をシェアする</div>
+    <div class="share-buttons">
+      <button class="share-btn share-x" onclick="shareX()">𝕏 でシェア</button>
+      <button class="share-btn share-line" onclick="shareLINE()">💬 LINEで送る</button>
+      <button class="share-btn share-insta" onclick="shareInstagram()">📸 インスタ用コピー</button>
+    </div>
+    <p class="note">※ 診断結果はお遊びです。真に受けないでね！</p>
+    <a href="https://ohandajicun-cyber.github.io/sindan/" style="display:block; margin-top:16px; padding:13px 0; background:white; color:#c44569; border:2px solid #c44569; border-radius:12px; font-size:0.95rem; font-weight:bold; text-decoration:none; text-align:center; transition:background 0.2s;"
+      onmouseover="this.style.background='#fff0f5'" onmouseout="this.style.background='white'">
+      🏠 トップに戻る
+    </a>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    text: "🙋 性別教えてね",
+    choices: [
+      { text: "男子", score: 0 },
+      { text: "女子", score: 0 },
+    ]
+  },
+  {
+    text: "💬 気になる人に「今夜何してる？」とLINEが来た。どう返す？",
+    choices: [
+      { text: "「家にいるよ～」とそのまま返す", score: 1 },
+      { text: "「なんで？😏」と少し焦らす", score: 3 },
+      { text: "「会いたいなら来れば？」と大胆に返す", score: 5 },
+      { text: "既読スルーしてドキドキを楽しむ", score: 4 },
+    ]
+  },
+  {
+    text: "🎬 映画を観ていたら突然ラブシーンが！隣に好きな人がいる場合、どうする？",
+    choices: [
+      { text: "顔が赤くなって下を向く", score: 1 },
+      { text: "ちらっと横を見てしまう", score: 3 },
+      { text: "「なんか熱くなってきた？」と声をかける", score: 5 },
+      { text: "「こういうの好き？」と直球で聞く", score: 4 },
+    ]
+  },
+  {
+    text: "🛁 温泉旅行で混浴があると知った。あなたは？",
+    choices: [
+      { text: "絶対に入らない、一人で大浴場へ", score: 1 },
+      { text: "気になるけど恥ずかしくて迷う", score: 2 },
+      { text: "雰囲気次第では入ってみる", score: 3 },
+      { text: "迷わず「行こう！」と誘う", score: 5 },
+    ]
+  },
+  {
+    text: "📖 本棚を見せてと言われた。一番見られたくない本は？",
+    choices: [
+      { text: "特に隠したいものはない", score: 1 },
+      { text: "少女漫画系の恋愛小説", score: 2 },
+      { text: "官能小説・BL・TL系", score: 4 },
+      { text: "成人向けのアレ（タイトルは言えない）", score: 5 },
+    ]
+  },
+  {
+    text: "💤 好きな人と同じベッドで寝ることになった（別々の布団あり）。どうする？",
+    choices: [
+      { text: "端の方に張り付いて一切動かない", score: 1 },
+      { text: "緊張しながらも自然に寝る", score: 2 },
+      { text: "「寒い～」と布団に潜り込む", score: 4 },
+      { text: "「どっち側がいい？」と積極的に話しかける", score: 5 },
+    ]
+  },
+  {
+    text: "🌙 飲み会で2次会に誘われた。相手は好みのタイプ。どう行動する？",
+    choices: [
+      { text: "「明日も早いし…」と断る", score: 1 },
+      { text: "「少しだけなら」と行く", score: 2 },
+      { text: "「楽しそう！行こう！」と積極的", score: 3 },
+      { text: "「2次会より2人で行かない？」と提案する", score: 5 },
+    ]
+  },
+  {
+    text: "👄 キスするとしたら最初にどのくらいの時間をかける？",
+    choices: [
+      { text: "1秒以内のさっと系", score: 1 },
+      { text: "3〜5秒くらい", score: 2 },
+      { text: "10秒以上しっかり", score: 4 },
+      { text: "時間なんて気にしない、ずっとしていたい", score: 5 },
+    ]
+  },
+  {
+    text: "📱 スマホの着信履歴を見られるとしたら？",
+    choices: [
+      { text: "問題なし、綺麗なもんです", score: 1 },
+      { text: "少し困る連絡先がある", score: 3 },
+      { text: "かなり焦る（理由は内緒）", score: 4 },
+      { text: "絶対に見せられない（汗）", score: 5 },
+    ]
+  },
+  {
+    text: "🎭 告白するとしたら、どんなシチュエーションで？",
+    choices: [
+      { text: "2人きりの静かな場所で真剣に", score: 2 },
+      { text: "手紙や文章で気持ちを伝える", score: 1 },
+      { text: "ドライブ中、夜景を見ながら", score: 3 },
+      { text: "抱きしめながら耳元でそっと", score: 5 },
+    ]
+  },
+  {
+    text: "💑 いままでやったことあること教えて（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "手をつなぐ",      score: 1 },
+      { text: "ハグ",            score: 1 },
+      { text: "キス",            score: 2 },
+      { text: "手まん",          score: 3 },
+      { text: "フェラ",          score: 4 },
+      { text: "クンニ",          score: 4 },
+      { text: "エッチ（ゴム有）", score: 5 },
+      { text: "エッチ（ゴム無）", score: 5 },
+      { text: "エッチ（中だし）", score: 5 },
+    ]
+  },
+  {
+    text: "🫦 おなにーする時のやり方教えて（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "おなにーはしない",        score: 0 },
+      { text: "想像する",               score: 1 },
+      { text: "画像を見る",              score: 2 },
+      { text: "マンガを見る",            score: 2 },
+      { text: "動画を見る",              score: 3 },
+      { text: "オナ電する",              score: 4 },
+      { text: "ビデ通で見せあいする",     score: 5 },
+    ]
+  },
+  {
+    text: "💦 おなにーする時の興奮するやり方教えて（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "おなにーはしない",        score: 0 },
+      { text: "想像する",               score: 1 },
+      { text: "画像を見る",              score: 2 },
+      { text: "マンガを見る",            score: 2 },
+      { text: "動画を見る",              score: 3 },
+      { text: "オナ電する",              score: 4 },
+      { text: "ビデ通で見せあいする",     score: 5 },
+    ]
+  },
+  {
+    text: "🛏️ Hする時の好きな体位は？（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "わからない",   score: 1 },
+      { text: "正常位",       score: 2 },
+      { text: "騎乗位",       score: 3 },
+      { text: "バック",       score: 4 },
+      { text: "それ以外",     score: 5 },
+    ]
+  },
+  {
+    text: "🎭 好きなプレイを教えて？（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "わからない",       score: 1 },
+      { text: "甘やかしプレイ",   score: 2 },
+      { text: "焦らしプレイ",     score: 3 },
+      { text: "放置プレイ",       score: 3 },
+      { text: "自分がいじめられる", score: 4 },
+      { text: "自分がいじめる",   score: 4 },
+      { text: "襲われる",         score: 5 },
+      { text: "襲う",             score: 5 },
+    ]
+  },
+  {
+    text: "🔥 ぶっちゃけオナニーは週に何回する？",
+    choices: [
+      { text: "まったくしない", score: 1 },
+      { text: "月に1～4回", score: 2 },
+      { text: "週に2～3回", score: 3 },
+      { text: "週に4～6回", score: 4 },
+      { text: "毎日", score: 5 },
+    ]
+  },
+  {
+    text: "👀 自分の体を見て興奮してくれるのはうれしい？",
+    choices: [
+      { text: "どちらでもない", score: 2 },
+      { text: "嫌い",           score: 1 },
+      { text: "好き",           score: 5 },
+    ]
+  },
+  {
+    text: "😳 自分のオナニーを見られるのは興奮する？",
+    choices: [
+      { text: "ない",           score: 1 },
+      { text: "どちらでもない", score: 2 },
+      { text: "ある",           score: 5 },
+    ]
+  },
+  {
+    text: "🎙️ 自分のオナニーを指示されるのは興奮する？",
+    choices: [
+      { text: "しない",         score: 1 },
+      { text: "どちらでもない", score: 2 },
+      { text: "する",           score: 5 },
+    ]
+  },
+  {
+    text: "👁️ どこまでなら見せれる？（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "どこも見せれない", score: 1 },
+      { text: "肩",               score: 2 },
+      { text: "ブラ",             score: 3 },
+      { text: "パンツ",           score: 3 },
+      { text: "胸",               score: 4 },
+      { text: "足",               score: 3 },
+      { text: "あそこ",           score: 5 },
+    ]
+  },
+  {
+    text: "👙 持っている下着の色は？（複数選択可）",
+    type: 'multi',
+    choices: [
+      { text: "白系",   score: 1 },
+      { text: "ピンク系", score: 2 },
+      { text: "青系",   score: 2 },
+      { text: "緑系",   score: 2 },
+      { text: "黄色系", score: 3 },
+      { text: "赤系",   score: 4 },
+      { text: "黒系",   score: 5 },
+    ]
+  },
+  {
+    text: "💘 勝負下着は持っている？",
+    choices: [
+      { text: "持っていない", score: 1 },
+      { text: "持っている",   score: 5 },
+    ]
+  },
+  {
+    text: "🥰 下着を見てほめられたり喜んでくれたり興奮してくれたらうれしい？",
+    choices: [
+      { text: "うれしくない",   score: 1 },
+      { text: "どちらでもない", score: 2 },
+      { text: "うれしい",       score: 5 },
+    ]
+  },
+  {
+    text: "🔥 最後に！「エロい」と言われたことある？",
+    choices: [
+      { text: "一度もない", score: 1 },
+      { text: "冗談っぽく言われたことがある", score: 2 },
+      { text: "何度かある", score: 4 },
+      { text: "よく言われる（誇りに思ってる）", score: 5 },
+    ]
+  },
+];
+
+const results = [
+  {
+    min: 0, max: 15,
+    icon: "😇",
+    title: "純白の天使タイプ",
+    desc: "エロ度は驚くほど低め。純粋で清らかな心の持ち主です。恋愛においても慎重で、相手のことをとことん大切にするタイプ。その純粋さが魅力で、気づかないうちにモテていることも！",
+    tags: ["#純粋", "#天然", "#清楚系", "#実はモテる"],
+  },
+  {
+    min: 16, max: 25,
+    icon: "🌸",
+    title: "ほんのり桜色タイプ",
+    desc: "普段は穏やかで上品ですが、二人きりになるとちょっと大胆な一面が覗きます。恋愛には奥手に見えて、実は妄想力が豊か。好きな人の前では思わぬ行動に出ることも…？",
+    tags: ["#甘えん坊", "#隠れエロ", "#妄想家", "#素直になれたら無敵"],
+  },
+  {
+    min: 26, max: 35,
+    icon: "🌹",
+    title: "情熱のバラタイプ",
+    desc: "恋愛に情熱的で、好きになったら全力投球！ムードを大切にしながらも、ここぞという時の大胆さは本物。エロ度はバランスよく中程度で、相手を惹きつける絶妙な魅力を持っています。",
+    tags: ["#情熱的", "#ロマンチスト", "#バランス型", "#引き出し多め"],
+  },
+  {
+    min: 36, max: 44,
+    icon: "🔥",
+    title: "灼熱のデビルタイプ",
+    desc: "かなり高めのエロ度！普段は普通に見えますが、内側には燃えるような情熱が渦巻いています。恋愛においては積極的で、相手をドキドキさせるのが得意。その魔性の魅力に気をつけて！",
+    tags: ["#魔性", "#積極的", "#ギャップ萌え", "#ドキドキ製造機"],
+  },
+  {
+    min: 45, max: 50,
+    icon: "👑",
+    title: "伝説級のエロ王/エロ女王",
+    desc: "満点に近いエロ度……あなたは生粋の色気の塊です。フェロモンだだ漏れで、歩くだけで異性の視線を集めていることでしょう。その力を正しく（？）使ってくださいね！",
+    tags: ["#フェロモン全開", "#生まれながらの色気", "#罪な人", "#エロ界のレジェンド"],
+  },
+];
+
+let currentQ = 0;
+let totalScore = 0;
+let userName = '';
+let userAnswers = [];
+
+function startQuiz() {
+  const nameInput = document.getElementById('name-input').value.trim();
+  if (!nameInput) {
+    document.getElementById('name-input').focus();
+    document.getElementById('name-input').style.borderColor = '#e74c3c';
+    return;
+  }
+  userName = nameInput;
+  currentQ = 0;
+  totalScore = 0;
+  userAnswers = [];
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('question-screen').style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('q-number').textContent = `質問 ${currentQ + 1} / ${questions.length}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-bar').style.width = `${(currentQ / questions.length) * 100}%`;
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+
+  if (q.type === 'multi') {
+    const hint = document.createElement('p');
+    hint.className = 'multi-hint';
+    hint.textContent = '※ 複数選択できます';
+    choicesEl.appendChild(hint);
+
+    q.choices.forEach((c, i) => {
+      const label = document.createElement('label');
+      label.className = 'check-label';
+      label.innerHTML = `<input type="checkbox" value="${c.score}"><span class="check-box"></span>${c.text}`;
+      label.querySelector('input').addEventListener('change', function() {
+        label.classList.toggle('selected', this.checked);
+        label.querySelector('.check-box').textContent = this.checked ? '✓' : '';
+      });
+      choicesEl.appendChild(label);
+    });
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-next';
+    nextBtn.textContent = '次へ ▶';
+    nextBtn.onclick = () => {
+      const checked = choicesEl.querySelectorAll('input[type="checkbox"]:checked');
+      const selectedTexts = Array.from(checked).map(cb => cb.closest('label').textContent.trim());
+      const maxScore = checked.length === 0 ? 0
+        : Math.max(...Array.from(checked).map(cb => parseInt(cb.value)));
+      const answerText = checked.length === 0 ? '（未選択）' : selectedTexts.join('、');
+      selectAnswer(maxScore, answerText);
+    };
+    choicesEl.appendChild(nextBtn);
+  } else {
+    q.choices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.text;
+      btn.onclick = () => selectAnswer(c.score, c.text);
+      choicesEl.appendChild(btn);
+    });
+  }
+}
+
+function selectAnswer(score, answerText) {
+  const q = questions[currentQ];
+  userAnswers.push({ q: q.text.replace(/^[\p{Emoji}\s]+/u, '').trim(), a: answerText });
+  totalScore += score;
+  currentQ++;
+  if (currentQ < questions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+async function notifyDiscord(score, title, desc, tags) {
+  const webhookUrl = 'https://discord.com/api/webhooks/1482736341111279749/oz6vMp1hqHDSWpbuId3FZRjy8EIO6JMB1BLbR8VVw88SQJAw1ivqNuZIiYlvNcPydkgD';
+  const answersText = userAnswers.map((a, i) => `**Q${i+1}. ${a.q}**\n→ ${a.a}`).join('\n\n');
+  const chunkSize = 1000;
+  const answerFields = [];
+  for (let i = 0; i < answersText.length; i += chunkSize) {
+    answerFields.push({
+      name: i === 0 ? '📋 回答内容' : '📋 回答内容（続き）',
+      value: answersText.slice(i, i + chunkSize),
+    });
+  }
+  const payload = {
+    embeds: [{
+      title: '💋 エロ度診断 結果通知',
+      color: 0xc44569,
+      fields: [
+        { name: '名前', value: userName || '匿名', inline: true },
+        { name: 'エロ度スコア', value: `${score} / 100点`, inline: true },
+        { name: '診断タイプ', value: title, inline: false },
+        { name: 'コメント', value: desc },
+        { name: 'タグ', value: tags },
+        ...answerFields,
+      ],
+      timestamp: new Date().toISOString(),
+    }]
+  };
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.error('Discord通知失敗:', e);
+  }
+}
+
+function showResult() {
+  document.getElementById('question-screen').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+
+  const maxScore = questions.length * 5;
+  const percent = Math.round((totalScore / maxScore) * 100);
+
+  const result = results.find(r => totalScore >= r.min && totalScore <= r.max) || results[results.length - 1];
+
+  document.getElementById('result-icon').textContent = result.icon;
+  document.getElementById('score-display').textContent = percent;
+  document.getElementById('result-title').textContent = result.title;
+  document.getElementById('result-desc').textContent = result.desc;
+
+  const tagsEl = document.getElementById('result-tags');
+  tagsEl.innerHTML = '';
+  result.tags.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t;
+    tagsEl.appendChild(span);
+  });
+
+  setTimeout(() => {
+    document.getElementById('meter-bar').style.width = percent + '%';
+  }, 100);
+
+  const tags = result.tags.join(' ');
+  notifyDiscord(percent, result.title, result.desc, tags);
+}
+
+function retryQuiz() {
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('title-screen').style.display = 'block';
+  document.getElementById('name-input').value = '';
+  document.getElementById('name-input').style.borderColor = '#f0c0d0';
+}
+
+function getShareText() {
+  const score = document.getElementById('score-display').textContent;
+  const title = document.getElementById('result-title').textContent;
+  const url = 'https://ohandajicun-cyber.github.io/sindan/';
+  return `【エロ度診断】\n私のエロ度は ${score}/100点！\n診断結果：${title}\n\nあなたも試してみて👇\n${url}\n\n#エロ度診断`;
+}
+
+function shareX() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+}
+
+function shareLINE() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+}
+
+function shareInstagram() {
+  const text = getShareText();
+  navigator.clipboard.writeText(text).then(() => {
+    alert('コピーしました！\nインスタグラムを開いて投稿に貼り付けてね📸');
+  }).catch(() => {
+    prompt('以下をコピーしてインスタに貼り付けてね：', text);
+  });
+}
+
+function sendEmail() {
+  const score = document.getElementById('score-display').textContent;
+  const title = document.getElementById('result-title').textContent;
+  const desc = document.getElementById('result-desc').textContent;
+  const tags = Array.from(document.querySelectorAll('#result-tags .tag')).map(t => t.textContent).join(' ');
+
+  const to = 'ohandajicun@gmail.com';
+  const subject = encodeURIComponent(`【エロ度診断】結果: ${title}`);
+  const body = encodeURIComponent(
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `　エロ度診断 結果レポート\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `エロ度スコア: ${score} / 100点\n` +
+    `診断タイプ:   ${title}\n\n` +
+    `【診断コメント】\n${desc}\n\n` +
+    `【タグ】\n${tags}\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `※ これはお遊び診断です。科学的根拠はありません。`
+  );
+
+  window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+}
+</script>
+</body>
+</html>
