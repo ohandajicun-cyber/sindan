@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>めろみゆ ✦ 自己紹介</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+      background: linear-gradient(160deg, #ffe0f0 0%, #f9e8ff 40%, #e8f0ff 100%);
+      min-height: 100vh;
+      padding: 32px 16px 60px;
+      color: #444;
+      line-height: 1.9;
+    }
+
+    /* ── デコレーション背景 ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,182,220,.35) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(200,160,255,.3) 0%, transparent 40%);
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── ヘッダータイトル ── */
+    .page-title {
+      text-align: center;
+      font-size: 0.78rem;
+      letter-spacing: .25em;
+      color: #c07aaa;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .page-title-main {
+      text-align: center;
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #c44d8a;
+      margin-bottom: 32px;
+      letter-spacing: .05em;
+    }
+    .page-title-main span {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff6fb7, #c44d8a, #9b59b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── プロフィールカード ── */
+    .profile-card {
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 28px 28px;
+      box-shadow: 0 8px 32px rgba(200,100,160,.18), 0 2px 8px rgba(0,0,0,.06);
+      border: 1.5px solid rgba(255,180,220,.45);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .profile-card img {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #ff9ecb;
+      box-shadow: 0 4px 16px rgba(255,100,170,.3);
+      flex-shrink: 0;
+    }
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff6fb7, #9b59b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    .profile-name small {
+      display: block;
+      font-size: 0.72rem;
+      color: #c07aaa;
+      font-weight: 400;
+      letter-spacing: .15em;
+      margin-top: 2px;
+      -webkit-text-fill-color: #c07aaa;
+    }
+    .btn-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #06C755, #00a847);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 10px 20px;
+      border-radius: 99px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(6,199,85,.35);
+      transition: transform .2s, box-shadow .2s;
+      width: fit-content;
+    }
+    .btn-line:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6,199,85,.45); }
+    .btn-line svg { width: 18px; height: 18px; fill: #fff; flex-shrink: 0; }
+
+    /* ── 区切り装飾 ── */
+    .divider {
+      text-align: center;
+      color: #e0a0cc;
+      font-size: 1.1rem;
+      letter-spacing: .3em;
+      margin: 32px 0;
+      user-select: none;
+    }
+
+    /* ── 本文カード ── */
+    .content-card {
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 30px 28px;
+      box-shadow: 0 6px 24px rgba(180,100,160,.14);
+      border: 1.5px solid rgba(255,190,225,.4);
+      margin-bottom: 20px;
+    }
+    .content-card p {
+      font-size: 0.97rem;
+      margin-bottom: 18px;
+      color: #3a3a3a;
+    }
+    .content-card p:last-child { margin-bottom: 0; }
+    .content-card strong { color: #c44d8a; font-weight: 700; }
+    .kaomoji { font-size: 1.1em; vertical-align: middle; }
+    .heart {
+      color: #ff1493;
+      display: inline-block;
+      animation: hb 1.2s ease-in-out infinite;
+    }
+    @keyframes hb {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.35); }
+    }
+
+    /* ── セクション見出し ── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #ffb3d9, #d898f0);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+
+    /* ── リスト ── */
+    .info-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .info-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: #3a3a3a;
+    }
+    .info-list li::before {
+      content: '♡';
+      color: #ff6fb7;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── 締めのメッセージ ── */
+    .closing {
+      text-align: center;
+      padding: 28px 20px;
+    }
+    .closing p {
+      font-size: 1rem;
+      color: #3a3a3a;
+      margin-bottom: 12px;
+    }
+    .closing .big-text {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #c44d8a;
+      margin-bottom: 20px;
+    }
+
+    /* ── 診断リンクバナー ── */
+    .diagnosis-banner {
+      background: linear-gradient(135deg, #ff6fb7 0%, #c44d8a 50%, #9b59b6 100%);
+      border-radius: 24px;
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: 0 8px 28px rgba(196,77,138,.35);
+      margin-top: 12px;
+    }
+    .diagnosis-banner p {
+      color: rgba(255,255,255,.9);
+      font-size: 0.88rem;
+      margin-bottom: 14px;
+    }
+    .diagnosis-banner .title {
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .btn-diagnosis {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: #c44d8a;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 14px 32px;
+      border-radius: 99px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+      transition: transform .2s, box-shadow .2s;
+      margin-top: 8px;
+    }
+    .btn-diagnosis:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+
+    /* ── フッター ── */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.72rem;
+      color: #c0a0b8;
+      letter-spacing: .05em;
+    }
+
+    @media (max-width: 480px) {
+      .profile-card { flex-direction: column; text-align: center; align-items: center; }
+      .profile-info { align-items: center; }
+      .content-card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- タイトル -->
+  <p class="page-title">✦ creator ✦</p>
+  <h1 class="page-title-main"><span>この診断を作った人</span></h1>
+
+  <!-- プロフィールカード（上） -->
+  <div class="profile-card">
+    <img src="めろみゆ.png" alt="めろみゆ">
+    <div class="profile-info">
+      <div class="profile-name">
+        めろみゆ
+        <small>MEROMYU</small>
+      </div>
+      <a class="btn-line" href="https://lin.ee/L2acwvk" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        公式LINEを追加
+      </a>
+    </div>
+  </div>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <!-- 挨拶 -->
+  <div class="content-card">
+    <p style="text-align:center; font-size:1.1rem; font-weight:700; color:#c44d8a; margin-bottom:20px;">
+      こんにちは〜<span class="kaomoji">( ᐢ o̴̶̷̤ ̫ o̴̶̷̤ ᐢ )</span><span class="heart">💗</span><span class="heart">💗</span><br>
+      <strong>めろみゆ</strong>だよ〜❣️❣️
+    </p>
+    <div class="section-label">✦ かるく自己紹介♡</div>
+    <p>
+      大学で心理学勉強してるめろみゆです<span class="kaomoji">( ᐢ o̴̶̷̤ ̫ o̴̶̷̤ ᐢ )</span>
+    </p>
+    <p>
+      高校の頃はマジで地味な陰キャでした…。<br>
+      クラスでも壁の花みたいにひっそりしてて、男子と話すのも苦手で、もちろん彼氏なんて一度もできたことなかったんです。<br>
+      毎日「このままじゃつまんないな…」って思ってたけど、自分を変える勇気もなくて<span class="kaomoji">( ´•̥ ̫ •̥` )</span><span class="heart">💗</span>
+    </p>
+    <p>
+      でも大学に入って本気で「垢抜け」してみたら、世界が変わりました！<br>
+      メイクの勉強からファッション、髪型まで全部見直して、少しずつ自信がついて…<br>
+      今では友達も増えて、モテるようになって、毎日が超楽しい大学生活！<br>
+      デートしたり、女子会したり、夢中になれることいっぱいできてるよ〜♡
+    </p>
+    <p>
+      バイト以外にも、P活とか怪しいことじゃなく、完全に健全な方法で月20万円のお小遣い稼いでる女子大生なんです！<br>
+      （内緒だけど、ブログやSNSを活かした自分のやり方で頑張ってるよ♪）
+    </p>
+  </div>
+
+  <!-- LINEの内容 -->
+  <div class="content-card">
+    <div class="section-label">✦ 私の公式LINEでは♡</div>
+    <p>だから今、<strong>高校時代の私みたいにならないでほしい！</strong>って本気で思ってるよ♡<br>
+    中学生・高校生のうちからできる簡単な垢抜け方法を、公式LINEでたくさん教えてあげたいんだ〜！<br>
+    「まだ早いかな…？」って思ってる子こそ、早めに変えちゃえば大学生活が全然違うよ✨</p>
+    <ul class="info-list">
+      <li>ここだけでしか見られない垢抜けテクやモテメイク情報</li>
+      <li>中学生・高校生向けの「今すぐできる垢抜けメソッド」</li>
+      <li>お得な副業のヒント</li>
+      <li>限定イベントのお知らせ</li>
+    </ul>
+    <p style="margin-top:16px;">
+      しかも、<br>
+      「どうやって垢抜けしたらいい？」「恋愛でこんな悩みある…」「進学どうしよう」「人に言えないような相談」<br>
+      全部真剣に聞いて、アドバイスしてる♡<br>
+      なんでも気軽に話してね！
+    </p>
+  </div>
+
+  <!-- 締め -->
+  <div class="content-card closing">
+    <p class="big-text">
+      公式LINE追加してくれたら、すぐに限定情報お届けするよ〜<span class="heart">💌</span>
+    </p>
+    <p>一緒に垢抜けて、楽しい毎日を手に入れようね！</p>
+    <p style="margin:16px 0;">
+      なんでこんな診断を作ったのかの理由は公式LINEで説明するね♡<br>
+      待ってる〜！<span class="kaomoji">( ᐢ o̴̶̷̤ ̫ o̴̶̷̤ ᐢ )</span><span class="heart">💗</span><span class="heart">💗</span>❣️
+    </p>
+  </div>
+
+  <!-- プロフィールカード（下） -->
+  <div class="profile-card" style="margin-top: 12px;">
+    <img src="めろみゆ.png" alt="めろみゆ">
+    <div class="profile-info">
+      <div class="profile-name">
+        めろみゆ
+        <small>MEROMYU</small>
+      </div>
+      <a class="btn-line" href="https://lin.ee/L2acwvk" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        公式LINEを追加
+      </a>
+    </div>
+  </div>
+
+  <div class="divider">✦ ✦ ✦</div>
+
+  <!-- 診断ページへのリンク -->
+  <div class="diagnosis-banner">
+    <p class="title">💋 エロ度診断やってみてね！</p>
+    <p>めろみゆが作った診断、あなたも試してみて♡<br>正直に答えるほど精度が上がるよ〜！</p>
+    <a class="btn-diagnosis" href="https://ohandajicun-cyber.github.io/sindan/index.html" target="_blank" rel="noopener">
+      💗 診断スタート ▶
+    </a>
+  </div>
+
+  <footer>
+    <p>© めろみゆ ✦ All Rights Reserved</p>
+  </footer>
+
+</div>
+</body>
+</html>
