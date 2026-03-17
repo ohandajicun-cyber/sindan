@@ -61,6 +61,35 @@
     .header h1 { font-size: 1.6rem; color: #c0392b; margin-bottom: 4px; }
     .header .subtitle { font-size: 0.85rem; color: #888; line-height: 1.6; }
 
+    .creator-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      max-width: 320px;
+      margin: 0 auto 20px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid rgba(255,150,200,0.5);
+      border-radius: 99px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(196,69,105,0.12);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .creator-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(196,69,105,0.22);
+    }
+    .creator-link img {
+      width: 32px; height: 32px;
+      border-radius: 50%; object-fit: cover;
+      border: 2px solid #ff9ecb; flex-shrink: 0;
+    }
+    .creator-link span {
+      font-size: 0.85rem; font-weight: bold;
+      color: #c44569; white-space: nowrap;
+    }
+
     .notice {
       background: #fff3cd; border: 1px solid #ffc107;
       border-radius: 12px; padding: 12px 16px;
@@ -183,6 +212,14 @@
       transition: all 0.2s; margin-top: 10px;
     }
     .btn-back:hover { background: #f9f9f9; border-color: #ccc; }
+    .btn-top {
+      display: block; width: 100%; padding: 13px; background: white; color: #aaa;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 0.9rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px; text-align: center;
+      text-decoration: none;
+    }
+    .btn-top:hover { background: #f9f9f9; border-color: #ccc; color: #888; }
     .btn-next {
       width: 100%; padding: 15px;
       background: linear-gradient(135deg, #27ae60, #1e8449);
@@ -250,6 +287,11 @@
     <p class="subtitle">下着デザイナーが監修したAIによる診断を行います。</p>
   </div>
 
+  <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener">
+    <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+    <span>👩 この診断を作った人</span>
+  </a>
+
   <!-- ステップUI -->
   <div id="step-ui">
     <div class="steps-row">
@@ -289,6 +331,7 @@
 
     <hr class="divider">
     <button class="btn-primary" onclick="goToStep2()">次へ →</button>
+    <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">🏠 トップに戻る</a>
   </div>
 
   <!-- ステップ2：症状・送信 -->
@@ -320,6 +363,7 @@
     <hr class="divider">
     <button class="btn-back" onclick="goToStep1()">← 戻る</button>
     <button class="btn-next" onclick="goToStep3()">次へ →</button>
+    <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">🏠 トップに戻る</a>
   </div>
 
 
@@ -566,6 +610,7 @@
     <hr class="divider">
     <button class="btn-back" onclick="goBackToStep2()">← 戻る</button>
     <button class="btn-next" id="btn-next-step3" onclick="sendAndProceed()">次へ →</button>
+    <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">🏠 トップに戻る</a>
     <p class="privacy-note">送信された情報はサーバーへ送信されAIが処理します。第三者への提供は行いません。</p>
   </div>
 
