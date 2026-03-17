@@ -127,6 +127,43 @@
       font-size: 0.75rem;
       color: #c0a0b0;
     }
+
+    .creator-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      max-width: 320px;
+      margin: 0 auto 36px;
+      padding: 12px 22px;
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid rgba(255,150,200,0.5);
+      border-radius: 99px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(196,69,105,0.12);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .creator-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(196,69,105,0.22);
+    }
+    .creator-link img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ff9ecb;
+      flex-shrink: 0;
+    }
+    .creator-link span {
+      font-size: 0.88rem;
+      font-weight: bold;
+      color: #c44569;
+      white-space: nowrap;
+    }
+    .creator-link-bottom {
+      margin: 36px auto 0;
+    }
   </style>
 </head>
 <body>
@@ -137,10 +174,15 @@
     <p class="tagline">あなたの本性を暴く診断が勢揃い！</p>
   </header>
 
+  <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener">
+    <img src="めろみゆ.png" alt="めろみゆ">
+    <span>👩 この診断を作った人</span>
+  </a>
+
   <div class="card-grid">
 
     <!-- エロ度診断 -->
-    <a class="card" href="https://ohandajicun-cyber.github.io/sindan/sinndan2.html"
+    <a class="card" href="./ero_shindan.html"
        style="--card-color: linear-gradient(135deg, #ff6b9d, #c44569);
               --badge-bg: #fff0f5; --badge-color: #c44569;">
       <div class="card-icon">💋</div>
@@ -168,7 +210,7 @@
     </a>
 
     <!-- あなたに似合う下着診断 -->
-    <a class="card" href="./shorts_sindan.html"
+    <a class="card" href="./breast_cancer_check.html"
        style="--card-color: linear-gradient(135deg, #ce93d8, #8e24aa);
               --badge-bg: #f3e5f5; --badge-color: #8e24aa;">
       <div class="card-icon">👙</div>
@@ -182,6 +224,11 @@
     </a>
 
   </div>
+
+  <a class="creator-link creator-link-bottom" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener">
+    <img src="めろみゆ.png" alt="めろみゆ">
+    <span>👩 この診断を作った人</span>
+  </a>
 
   <footer class="footer">
     <p>© 診断メーカー ／ 下着診断メーカーは東京女子大学情報処理センター協力 すべての診断はエンターテインメント目的です</p>
