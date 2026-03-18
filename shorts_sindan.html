@@ -618,7 +618,11 @@
       <div id="url-card"></div>
     </div>
     <button class="btn-back" onclick="goBackToStep3()">← 戻る</button>
-    <span class="box-title"><a href="https://ohandajicun-cyber.github.io/sindan/index.html">他の診断を行う</a></span>
+    <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">他の診断を行う</a>
+    <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener" style="margin-top:12px;">
+      <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+      <span>👩 この診断を作った人</span>
+    </a>
       </div>
 
   <!-- 完了 -->
@@ -711,11 +715,7 @@
     hideStep3Error();
     const btn = document.getElementById('btn-next-step3');
     btn.disabled = false;
-    if (n === TOTAL_SUBSTEPS) {
-      btn.textContent = selectedVideo ? '次へ →' : '次へ →';
-    } else {
-      btn.textContent = '次へ →';
-    }
+    btn.textContent = '次へ →';
   }
 
   async function substepNext() {
@@ -753,7 +753,7 @@
         } catch(e) {
           if (e.message !== 'ABORTED') showStep3Error('送信に失敗しました: ' + e.message);
           btn.disabled = false;
-          btn.textContent = selectedVideo ? '次へ →' : '次へ →';
+          btn.textContent = '次へ →';
           return;
         }
       }
@@ -895,10 +895,6 @@
       const video = document.getElementById('preview-video');
       video.src = URL.createObjectURL(file);
       video.style.display = 'block';
-      // 動画が選択されたらボタンテキストを更新
-      if (currentSubStep === TOTAL_SUBSTEPS) {
-        document.getElementById('btn-next-step3').textContent = '次へ →';
-      }
     }
     hideStep3Error();
   }
