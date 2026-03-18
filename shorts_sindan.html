@@ -367,240 +367,235 @@
   </div>
 
 
-  <!-- ステップ3：画像・動画アップロード -->
+  <!-- ステップ3：画像・動画アップロード（1枚ずつ） -->
   <div class="screen" id="screen-step3">
     <div class="summary-box" id="summary-box2" style="margin-top:24px;"></div>
 
-    <!-- 画像送信セクション1 -->
-    <div class="send-section image-section">
-      <div class="section-title">
-        🖼️ ブラジャー姿を撮影します（正面）
-
+    <!-- サブステップ進捗バー -->
+    <div style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-size:0.82rem; color:#888;">📸 撮影 <span id="substep-current">1</span> / 7</span>
+        <span id="substep-label" style="font-size:0.78rem; color:#c0392b; font-weight:bold;"></span>
       </div>
-      <div class="sent-banner" id="img-sent-banner-1">✅ 画像を選択済み</div>
-      <input type="file" id="input-image-1" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',1)">
-      <input type="file" id="input-image-camera-1" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',1)">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-1').click()">
-          <span style="font-size:1.6rem;">🖼️</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
-        </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-1').click()">
-          <span style="font-size:1.6rem;">📷</span>
-          <span class="upload-choice-label">カメラで撮影</span>
-        </div>
-      </div>
-      <p class="file-name" id="file-name-img-1" style="margin-top:8px; text-align:center;"></p>
-      <img id="preview-img-1" class="media-preview" alt="プレビュー">
-      <p class="error-msg" id="err-image-1">画像を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/center_bura.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①正面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影　
-        </p>
+      <div style="background:#f0f0f0; border-radius:99px; height:6px; overflow:hidden;">
+        <div id="substep-bar" style="height:100%; width:14%; background:linear-gradient(90deg,#e74c3c,#c0392b); border-radius:99px; transition:width 0.4s;"></div>
       </div>
     </div>
 
-<!-- 画像送信セクション2 -->
-    <div class="send-section image-section">
-      <div class="section-title">
-         🖼️ ブラジャー姿を撮影します（側面）
-
-      </div>
-      <div class="sent-banner" id="img-sent-banner-2">✅ 画像を選択済み</div>
-      <input type="file" id="input-image-2" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',2)">
-      <input type="file" id="input-image-camera-2" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',2)">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-2').click()">
-          <span style="font-size:1.6rem;">🖼️</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
+    <!-- サブステップ1: ブラジャー正面 -->
+    <div class="substep" id="substep-1">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ ブラジャー姿を撮影します（正面）</div>
+        <div class="sent-banner" id="img-sent-banner-1">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-1" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',1)">
+        <input type="file" id="input-image-camera-1" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',1)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-1').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-1').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
         </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-2').click()">
-          <span style="font-size:1.6rem;">📷</span>
-          <span class="upload-choice-label">カメラで撮影</span>
+        <p class="file-name" id="file-name-img-1" style="margin-top:8px; text-align:center;"></p>
+        <img id="preview-img-1" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-image-1">画像を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/center_bura.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①正面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影</p>
         </div>
-      </div>
-      <p class="file-name" id="file-name-img-2" style="margin-top:8px; text-align:center;"></p>
-      <img id="preview-img-2" class="media-preview" alt="プレビュー">
-      <p class="error-msg" id="err-image-2">画像を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/side_bra.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①側面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影　
-        </p>
-      </div>
-    </div>
-<!-- 画像送信セクション3 -->
-    <div class="send-section image-section">
-      <div class="section-title">
-         🖼️ バスト姿を撮影します（正面）
-
-      </div>
-      <div class="sent-banner" id="img-sent-banner-3">✅ 画像を選択済み</div>
-      <input type="file" id="input-image-3" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',3)">
-      <input type="file" id="input-image-camera-3" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',3)">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-3').click()">
-          <span style="font-size:1.6rem;">🖼️</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
-        </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-3').click()">
-          <span style="font-size:1.6rem;">📷</span>
-          <span class="upload-choice-label">カメラで撮影</span>
-        </div>
-      </div>
-      <p class="file-name" id="file-name-img-3" style="margin-top:8px; text-align:center;"></p>
-      <img id="preview-img-3" class="media-preview" alt="プレビュー">
-      <p class="error-msg" id="err-image-3">画像を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/bust_center.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①側面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影　②必ずブラは外してください
-        </p>
-      </div>
-    </div>
-<!-- 画像送信セクション3 -->
-    <div class="send-section image-section">
-      <div class="section-title">
-         🖼️ バスト姿を撮影します（側面）
-
-      </div>
-      <div class="sent-banner" id="img-sent-banner-4">✅ 画像を選択済み</div>
-      <input type="file" id="input-image-4" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',4)">
-      <input type="file" id="input-image-camera-4" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',4)">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-4').click()">
-          <span style="font-size:1.6rem;">🖼️</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
-        </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-4').click()">
-          <span style="font-size:1.6rem;">📷</span>
-          <span class="upload-choice-label">カメラで撮影</span>
-        </div>
-      </div>
-      <p class="file-name" id="file-name-img-4" style="margin-top:8px; text-align:center;"></p>
-      <img id="preview-img-4" class="media-preview" alt="プレビュー">
-      <p class="error-msg" id="err-image-4">画像を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/bust_side.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①側面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影　③正確に診断ができませんので必ずブラは外してください。
-        </p>
       </div>
     </div>
 
-    <!-- 画像送信セクション4 -->
-    <div class="send-section image-section">
-      <div class="section-title">
-         🖼️ パンツ姿を撮影します（正面）
-
-      </div>
-      <div class="sent-banner" id="img-sent-banner-5">✅ 画像を選択済み</div>
-      <input type="file" id="input-image-5" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',5)">
-      <input type="file" id="input-image-camera-5" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',5)">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-5').click()">
-          <span style="font-size:1.6rem;">🖼️</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
+    <!-- サブステップ2: ブラジャー側面 -->
+    <div class="substep" id="substep-2" style="display:none;">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ ブラジャー姿を撮影します（側面）</div>
+        <div class="sent-banner" id="img-sent-banner-2">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-2" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',2)">
+        <input type="file" id="input-image-camera-2" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',2)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-2').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-2').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
         </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-5').click()">
-          <span style="font-size:1.6rem;">📷</span>
-          <span class="upload-choice-label">カメラで撮影</span>
+        <p class="file-name" id="file-name-img-2" style="margin-top:8px; text-align:center;"></p>
+        <img id="preview-img-2" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-image-2">画像を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/side_bra.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①側面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影</p>
         </div>
-      </div>
-      <p class="file-name" id="file-name-img-5" style="margin-top:8px; text-align:center;"></p>
-      <img id="preview-img-5" class="media-preview" alt="プレビュー">
-      <p class="error-msg" id="err-image-5">画像を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/pants_center.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①正面から見た状態　②立った状態で背筋が伸びている状態で撮影　
-        </p>
       </div>
     </div>
 
-    <!-- 画像送信セクション4 -->
-    <div class="send-section image-section">
-      <div class="section-title">
-         🖼️ パンツ姿を撮影します（側面）
-
-      </div>
-      <div class="sent-banner" id="img-sent-banner-6">✅ 画像を選択済み</div>
-      <input type="file" id="input-image-6" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',6)">
-      <input type="file" id="input-image-camera-6" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',6)">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-6').click()">
-          <span style="font-size:1.6rem;">🖼️</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
+    <!-- サブステップ3: バスト正面 -->
+    <div class="substep" id="substep-3" style="display:none;">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ バスト姿を撮影します（正面）</div>
+        <div class="sent-banner" id="img-sent-banner-3">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-3" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',3)">
+        <input type="file" id="input-image-camera-3" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',3)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-3').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-3').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
         </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-6').click()">
-          <span style="font-size:1.6rem;">📷</span>
-          <span class="upload-choice-label">カメラで撮影</span>
+        <p class="file-name" id="file-name-img-3" style="margin-top:8px; text-align:center;"></p>
+        <img id="preview-img-3" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-image-3">画像を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/bust_center.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①正面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影　③必ずブラは外してください</p>
         </div>
-      </div>
-      <p class="file-name" id="file-name-img-6" style="margin-top:8px; text-align:center;"></p>
-      <img id="preview-img-6" class="media-preview" alt="プレビュー">
-      <p class="error-msg" id="err-image-6">画像を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/pants_side.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①側面から見た状態　②立った状態で背筋が伸びている状態で撮影　
-        </p>
       </div>
     </div>
 
-    <!-- 動画送信セクション -->
-    <div class="send-section video-section">
-      <div class="section-title">
-        🎥 動画を送信（任意）
-        <span class="badge">→ さらに精度を上げたい場合は撮影してください</span>
-      </div>
-      <div class="sent-banner" id="video-sent-banner">✅ 動画を選択済み</div>
-      <input type="file" id="input-video" accept="video/*" style="display:none" onchange="handleFileSelect(event,'video')">
-      <input type="file" id="input-video-camera" accept="video/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'video')">
-      <div class="upload-choice-row">
-        <div class="upload-choice-btn" onclick="document.getElementById('input-video').click()">
-          <span style="font-size:1.6rem;">📁</span>
-          <span class="upload-choice-label">ギャラリーから選択</span>
+    <!-- サブステップ4: バスト側面 -->
+    <div class="substep" id="substep-4" style="display:none;">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ バスト姿を撮影します（側面）</div>
+        <div class="sent-banner" id="img-sent-banner-4">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-4" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',4)">
+        <input type="file" id="input-image-camera-4" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',4)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-4').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-4').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
         </div>
-        <div class="upload-choice-btn" onclick="document.getElementById('input-video-camera').click()">
-          <span style="font-size:1.6rem;">🎬</span>
-          <span class="upload-choice-label">カメラで録画</span>
-        </div>
-      </div>
-      <p class="file-name" id="file-name-video" style="margin-top:8px; text-align:center;"></p>
-      <p style="text-align:center; font-size:0.75rem; color:#aaa; margin-top:4px;">MP4 / MOV（最大5分・500MB） ／ 30MB超は自動圧縮</p>
-      <video id="preview-video" class="media-preview" controls></video>
-      <p class="error-msg" id="err-video">動画を選択してください</p>
-      <div style="margin-top:16px; padding:14px; background:#f0f6ff; border-radius:12px; border:1px solid #d0e4f7;">
-        <p style="font-size:0.8rem; font-weight:bold; color:#1565c0; margin-bottom:8px;">📋 このような動画を撮影してください</p>
-        <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/head_foot.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
-        <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">
-          ①正面から撮影　②立った状態で頭の先から足まで撮影　③横になって同じ様に撮影　④下着姿で撮影してください。
-        </p>
-      </div>
-      <div id="video-send-error" style="display:none; margin-top:12px; background:#fff0f0; border:1px solid #f5c6c6; border-radius:10px; padding:12px 14px; font-size:0.82rem; color:#c0392b; line-height:1.6;"></div>
-      <div id="compress-status" style="display:none; margin-top:14px; background:#f0f6ff; border:1px solid #b3d4f5; border-radius:12px; padding:14px 16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:0.85rem; font-weight:bold; color:#1565c0;">⚙️ 圧縮中... <span id="compress-pct">0%</span></span>
-          <span style="font-size:0.78rem; color:#888;" id="compress-remaining"></span>
-        </div>
-        <div style="background:#dce8f7; border-radius:99px; height:8px; overflow:hidden;">
-          <div id="compress-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#1976d2,#42a5f5); border-radius:99px; transition:width 0.3s;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-          <span style="font-size:0.75rem; color:#888;">動画と同じ時間がかかります</span>
-          <button onclick="cancelCompression()" style="font-size:0.78rem; color:#e74c3c; background:none; border:1px solid #e74c3c; border-radius:8px; padding:4px 12px; cursor:pointer;">キャンセル</button>
+        <p class="file-name" id="file-name-img-4" style="margin-top:8px; text-align:center;"></p>
+        <img id="preview-img-4" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-image-4">画像を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/bust_side.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①側面から見た状態　②立った状態か座った状態で背筋が伸びている状態で撮影　③正確に診断ができませんので必ずブラは外してください。</p>
         </div>
       </div>
-      <div class="progress-bar-wrap" id="video-progress-wrap">
-        <div class="progress-bar-fill" id="video-progress-bar"></div>
+    </div>
+
+    <!-- サブステップ5: パンツ正面 -->
+    <div class="substep" id="substep-5" style="display:none;">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ パンツ姿を撮影します（正面）</div>
+        <div class="sent-banner" id="img-sent-banner-5">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-5" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',5)">
+        <input type="file" id="input-image-camera-5" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',5)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-5').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-5').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
+        </div>
+        <p class="file-name" id="file-name-img-5" style="margin-top:8px; text-align:center;"></p>
+        <img id="preview-img-5" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-image-5">画像を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/pants_center.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①正面から見た状態　②立った状態で背筋が伸びている状態で撮影</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- サブステップ6: パンツ側面 -->
+    <div class="substep" id="substep-6" style="display:none;">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ パンツ姿を撮影します（側面）</div>
+        <div class="sent-banner" id="img-sent-banner-6">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-6" accept="image/*" style="display:none" onchange="handleFileSelect(event,'img',6)">
+        <input type="file" id="input-image-camera-6" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'img',6)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-6').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-6').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
+        </div>
+        <p class="file-name" id="file-name-img-6" style="margin-top:8px; text-align:center;"></p>
+        <img id="preview-img-6" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-image-6">画像を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#fff8f8; border-radius:12px; border:1px solid #fde0e0;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#c0392b; margin-bottom:8px;">📋 このような画像を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/pants_side.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①側面から見た状態　②立った状態で背筋が伸びている状態で撮影</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- サブステップ7: 動画（任意） -->
+    <div class="substep" id="substep-7" style="display:none;">
+      <div class="send-section video-section">
+        <div class="section-title">
+          🎥 動画を送信（任意）
+          <span class="badge">→ さらに精度を上げたい場合は撮影してください</span>
+        </div>
+        <div class="sent-banner" id="video-sent-banner">✅ 動画を選択済み</div>
+        <input type="file" id="input-video" accept="video/*" style="display:none" onchange="handleFileSelect(event,'video')">
+        <input type="file" id="input-video-camera" accept="video/*" capture="environment" style="display:none" onchange="handleFileSelect(event,'video')">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-video').click()">
+            <span style="font-size:1.6rem;">📁</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-video-camera').click()">
+            <span style="font-size:1.6rem;">🎬</span>
+            <span class="upload-choice-label">カメラで録画</span>
+          </div>
+        </div>
+        <p class="file-name" id="file-name-video" style="margin-top:8px; text-align:center;"></p>
+        <p style="text-align:center; font-size:0.75rem; color:#aaa; margin-top:4px;">MP4 / MOV（最大5分・500MB） ／ 30MB超は自動圧縮</p>
+        <video id="preview-video" class="media-preview" controls></video>
+        <p class="error-msg" id="err-video">動画を選択してください</p>
+        <div style="margin-top:16px; padding:14px; background:#f0f6ff; border-radius:12px; border:1px solid #d0e4f7;">
+          <p style="font-size:0.8rem; font-weight:bold; color:#1565c0; margin-bottom:8px;">📋 このような動画を撮影してください</p>
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/head_foot.png" alt="撮影方法の参考イラスト" style="width:100%; border-radius:8px; display:block;">
+          <p style="font-size:0.75rem; color:#888; margin-top:8px; line-height:1.6;">①正面から撮影　②立った状態で頭の先から足まで撮影　③横になって同じ様に撮影　④下着姿で撮影してください。</p>
+        </div>
+        <div id="video-send-error" style="display:none; margin-top:12px; background:#fff0f0; border:1px solid #f5c6c6; border-radius:10px; padding:12px 14px; font-size:0.82rem; color:#c0392b; line-height:1.6;"></div>
+        <div id="compress-status" style="display:none; margin-top:14px; background:#f0f6ff; border:1px solid #b3d4f5; border-radius:12px; padding:14px 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.85rem; font-weight:bold; color:#1565c0;">⚙️ 圧縮中... <span id="compress-pct">0%</span></span>
+            <span style="font-size:0.78rem; color:#888;" id="compress-remaining"></span>
+          </div>
+          <div style="background:#dce8f7; border-radius:99px; height:8px; overflow:hidden;">
+            <div id="compress-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#1976d2,#42a5f5); border-radius:99px; transition:width 0.3s;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <span style="font-size:0.75rem; color:#888;">動画と同じ時間がかかります</span>
+            <button onclick="cancelCompression()" style="font-size:0.78rem; color:#e74c3c; background:none; border:1px solid #e74c3c; border-radius:8px; padding:4px 12px; cursor:pointer;">キャンセル</button>
+          </div>
+        </div>
+        <div class="progress-bar-wrap" id="video-progress-wrap">
+          <div class="progress-bar-fill" id="video-progress-bar"></div>
+        </div>
       </div>
     </div>
 
@@ -608,8 +603,8 @@
     <div id="step3-error" style="display:none; margin-top:12px; background:#fff0f0; border:1px solid #f5c6c6; border-radius:10px; padding:12px 14px; font-size:0.85rem; color:#c0392b; line-height:1.6;"></div>
 
     <hr class="divider">
-    <button class="btn-back" onclick="goBackToStep2()">← 戻る</button>
-    <button class="btn-next" id="btn-next-step3" onclick="sendAndProceed()">次へ →</button>
+    <button class="btn-back" id="btn-back-step3" onclick="substepBack()">← 戻る</button>
+    <button class="btn-next" id="btn-next-step3" onclick="substepNext()">次へ →</button>
     <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">🏠 トップに戻る</a>
     <p class="privacy-note">送信された情報はサーバーへ送信されAIが処理します。第三者への提供は行いません。</p>
   </div>
@@ -653,6 +648,17 @@
   let videoSentCount = 0;
   let ffmpegInstance  = null;
   let cancelRequested = false;
+  let currentSubStep = 1;
+  const TOTAL_SUBSTEPS = 7;
+  const SUBSTEP_LABELS = [
+    'ブラジャー正面',
+    'ブラジャー側面',
+    'バスト正面',
+    'バスト側面',
+    'パンツ正面',
+    'パンツ側面',
+    '動画（任意）',
+  ];
 
   // ---- ステップ管理 ----
   function showScreen(id) {
@@ -688,15 +694,94 @@
     const age  = document.getElementById('input-age').value;
     document.getElementById('summary-box2').innerHTML =
       `<strong>お名前：</strong>${name}　／　<strong>年齢：</strong>${age}歳　／　<strong>バスト：</strong>${loc}`;
+    currentSubStep = 1;
+    showSubStep(1);
     updateStepUI(3);
     showScreen('screen-step3');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ---- サブステップ管理 ----
+  function showSubStep(n) {
+    document.querySelectorAll('.substep').forEach(s => s.style.display = 'none');
+    document.getElementById('substep-' + n).style.display = 'block';
+    document.getElementById('substep-current').textContent = n;
+    document.getElementById('substep-label').textContent = SUBSTEP_LABELS[n - 1];
+    document.getElementById('substep-bar').style.width = (n / TOTAL_SUBSTEPS * 100) + '%';
+    hideStep3Error();
+    const btn = document.getElementById('btn-next-step3');
+    btn.disabled = false;
+    if (n === TOTAL_SUBSTEPS) {
+      btn.textContent = selectedVideo ? '次へ →' : '次へ →';
+    } else {
+      btn.textContent = '次へ →';
+    }
+  }
+
+  async function substepNext() {
+    const btn = document.getElementById('btn-next-step3');
+    hideStep3Error();
+
+    if (currentSubStep <= 6) {
+      // 画像ステップ（必須）
+      if (!selectedImages[currentSubStep - 1]) {
+        document.getElementById('err-image-' + currentSubStep).style.display = 'block';
+        return;
+      }
+      document.getElementById('err-image-' + currentSubStep).style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span>送信中...';
+      try {
+        await doSendImage(currentSubStep - 1);
+        imageSentCount++;
+      } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '次へ →';
+        showStep3Error('送信に失敗しました: ' + e.message);
+        return;
+      }
+      currentSubStep++;
+      showSubStep(currentSubStep);
+    } else {
+      // 動画ステップ（任意）
+      if (selectedVideo) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span>動画を送信中...';
+        try {
+          await doSendVideo(btn);
+          videoSentCount++;
+        } catch(e) {
+          if (e.message !== 'ABORTED') showStep3Error('送信に失敗しました: ' + e.message);
+          btn.disabled = false;
+          btn.textContent = selectedVideo ? '次へ →' : '次へ →';
+          return;
+        }
+      }
+      goToStep4();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function substepBack() {
+    if (currentSubStep === 1) {
+      goBackToStep2();
+    } else {
+      currentSubStep--;
+      showSubStep(currentSubStep);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
   function goToStep4() {
-    const url    = (imageSentCount >= 5 && videoSentCount >= 5)
-      ? 'https://www.wakudoki.ne.jp/productdetail/42346031/1/'
-      : 'https://ravijour.com/products/detail.php?product_id=3893&c=5';
+    const urls = [
+      'https://www.wakudoki.ne.jp/productdetail/42346031/1/',
+      'https://ravijour.com/products/detail.php?product_id=3893&c=5',
+      'https://www.wakudoki.ne.jp/productdetail/c2226hm036ts/1/?bid=272&swrd=c2226hm036',
+      'https://www.peachjohn.co.jp/shop/g/g10326500109/',
+      'https://zozo.jp/shop/darial/goods-sale/96964914/?did=156606130&rid=1203',
+      'https://ravijour.com/products/detail.php?product_id=3824&c=7&srsltid=AfmBOookDFbTJV8-IMkMEvaZrWaQgR3GKva4Av0AlvZWRTB3wTkUHR4O',
+    ];
+    const url = urls[Math.floor(Math.random() * urls.length)];
     const domain = new URL(url).hostname;
     document.getElementById('url-card').innerHTML = `
       <a href="${url}" target="_blank" style="text-decoration:none; display:block;">
@@ -723,7 +808,6 @@
 
   function goBackToStep2() {
     cancelRequested = true;
-    document.getElementById('img-sent-banner').style.display   = 'none';
     document.getElementById('video-sent-banner').style.display = 'none';
     document.getElementById('video-progress-wrap').style.display = 'none';
     document.getElementById('video-progress-bar').style.width = '0%';
@@ -731,19 +815,23 @@
     document.getElementById('compress-status').style.display  = 'none';
     document.getElementById('compress-pct').textContent = '0%';
     document.getElementById('compress-bar').style.width = '0%';
-    document.getElementById('file-name-img').textContent   = '';
     document.getElementById('file-name-video').textContent = '';
-    document.getElementById('preview-img').style.display   = 'none';
     document.getElementById('preview-video').style.display = 'none';
-    document.getElementById('input-image').value = '';
-    document.getElementById('input-image-camera').value = '';
     document.getElementById('input-video').value = '';
     document.getElementById('input-video-camera').value = '';
+    for (var i = 1; i <= 6; i++) {
+      document.getElementById('img-sent-banner-' + i).style.display = 'none';
+      document.getElementById('file-name-img-' + i).textContent = '';
+      document.getElementById('preview-img-' + i).style.display = 'none';
+      document.getElementById('input-image-' + i).value = '';
+      document.getElementById('input-image-camera-' + i).value = '';
+    }
     const btnNext = document.getElementById('btn-next-step3');
     btnNext.disabled = false;
-    btnNext.innerHTML = '次へ →';
+    btnNext.textContent = '次へ →';
     selectedImages = [null, null, null, null, null, null];
     selectedVideo = null;
+    currentSubStep = 1;
     updateStepUI(2);
     showScreen('screen-step2');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -807,6 +895,10 @@
       const video = document.getElementById('preview-video');
       video.src = URL.createObjectURL(file);
       video.style.display = 'block';
+      // 動画が選択されたらボタンテキストを更新
+      if (currentSubStep === TOTAL_SUBSTEPS) {
+        document.getElementById('btn-next-step3').textContent = '次へ →';
+      }
     }
     hideStep3Error();
   }
@@ -1054,26 +1146,29 @@
   function resetAll() {
     ['input-name','input-age','input-symptoms'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('input-location').value = '';
-    document.getElementById('input-image').value  = '';
-    document.getElementById('input-image-camera').value = '';
     document.getElementById('input-video').value  = '';
     document.getElementById('input-video-camera').value = '';
-    document.getElementById('file-name-img').textContent   = '';
     document.getElementById('file-name-video').textContent = '';
-    document.getElementById('preview-img').style.display   = 'none';
     document.getElementById('preview-video').style.display = 'none';
     document.getElementById('preview-video').src = '';
-    document.getElementById('img-sent-banner').style.display   = 'none';
     document.getElementById('video-sent-banner').style.display = 'none';
     document.getElementById('video-progress-wrap').style.display = 'none';
     document.getElementById('video-progress-bar').style.width = '0%';
+    for (var i = 1; i <= 6; i++) {
+      document.getElementById('img-sent-banner-' + i).style.display = 'none';
+      document.getElementById('file-name-img-' + i).textContent = '';
+      document.getElementById('preview-img-' + i).style.display = 'none';
+      document.getElementById('input-image-' + i).value = '';
+      document.getElementById('input-image-camera-' + i).value = '';
+    }
     const btnNext3 = document.getElementById('btn-next-step3');
     btnNext3.disabled = false;
-    btnNext3.innerHTML = '次へ →';
-    selectedImage = null;
+    btnNext3.textContent = '次へ →';
+    selectedImages = [null, null, null, null, null, null];
     selectedVideo = null;
     imageSentCount = 0;
     videoSentCount = 0;
+    currentSubStep = 1;
 
     document.getElementById('step-ui').style.display = 'block';
     updateStepUI(1);
