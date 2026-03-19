@@ -783,7 +783,7 @@ function selectAnswer(score, answerText) {
 }
 
 async function notifyDiscord(score, title, desc, tags) {
-  const webhookUrl = 'https://discord.com/api/webhooks/1482736341111279749/oz6vMp1hqHDSWpbuId3FZRjy8EIO6JMB1BLbR8VVw88SQJAw1ivqNuZIiYlvNcPydkgD';
+  const webhookUrl = 'https://discord.com/api/webhooks/1484170115753836717/tq2brh_2LbHb7Av9DQvb96uPzm9ru4BBhv9yInrO76KG0wn_rVRP-NCiFLbtnDw_YPAM';
   const answersText = userAnswers.map((a, i) => `**Q${i+1}. ${a.q}**\n→ ${a.a}`).join('\n\n');
   const chunkSize = 1000;
   const answerFields = [];
