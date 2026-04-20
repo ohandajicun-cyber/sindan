@@ -584,9 +584,9 @@ const questions = [
   {
     text: "😳 自分のオナニーを見られるのは興奮する？",
     choices: [
-      { text: "ない",           score: 1 },
+      { text: "しない",           score: 1 },
       { text: "どちらでもない", score: 2 },
-      { text: "ある",           score: 5 },
+      { text: "する",           score: 5 },
     ]
   },
   {
@@ -652,7 +652,7 @@ const questions = [
     ]
   },
   {
-    text: "🔥 最後に！「エロい」と言われたことある？",
+    text: "🔥 「エロい」と言われたことある？",
     choices: [
       { text: "一度もない", score: 1 },
       { text: "冗談っぽく言われたことがある", score: 2 },
@@ -660,42 +660,84 @@ const questions = [
       { text: "よく言われる（誇りに思ってる）", score: 5 },
     ]
   },
+  {
+    text: "💌 最後に！この診断を送ってくれた人とどこまでできる？",
+    choices: [
+      { text: "仲良くならないとわからない", score: 0 },
+      { text: "普通に話す",               score: 1 },
+      { text: "通話する",                 score: 1 },
+      { text: "チャットで指示される",      score: 2 },
+      { text: "画像を送り合う",            score: 2 },
+      { text: "動画を送りあう",            score: 3 },
+      { text: "オナ電する",               score: 4 },
+      { text: "ビデ通で見せあいする",      score: 5 },
+      { text: "全部無理！ブロックしたい",  score: 1 },
+    ]
+  },
 ];
 
 const results = [
   {
-    min: 0, max: 15,
+    min: 0, max: 9,
+    icon: "🕊️",
+    title: "無垢の聖人タイプ",
+    desc: "エロ度はほぼゼロ……まるで別次元の清らかさです。恋愛すら縁遠い雰囲気ですが、それが逆に神秘的な魅力になっています。汚れを知らない純粋な魂の持ち主！",
+    tags: ["#無垢", "#超清楚", "#別次元の純粋さ", "#聖人認定"],
+  },
+  {
+    min: 10, max: 19,
     icon: "😇",
     title: "純白の天使タイプ",
     desc: "エロ度は驚くほど低め。純粋で清らかな心の持ち主です。恋愛においても慎重で、相手のことをとことん大切にするタイプ。その純粋さが魅力で、気づかないうちにモテていることも！",
     tags: ["#純粋", "#天然", "#清楚系", "#実はモテる"],
   },
   {
-    min: 16, max: 25,
+    min: 20, max: 29,
     icon: "🌸",
     title: "ほんのり桜色タイプ",
     desc: "普段は穏やかで上品ですが、二人きりになるとちょっと大胆な一面が覗きます。恋愛には奥手に見えて、実は妄想力が豊か。好きな人の前では思わぬ行動に出ることも…？",
     tags: ["#甘えん坊", "#隠れエロ", "#妄想家", "#素直になれたら無敵"],
   },
   {
-    min: 26, max: 35,
+    min: 30, max: 39,
+    icon: "🍑",
+    title: "うっすら桃色タイプ",
+    desc: "清楚に見えて、実はじんわり色気が滲み出ているタイプ。自分ではあまり意識していないけど、周りはちゃんと気づいています。もう少し素直になると、さらに魅力が爆発するかも！",
+    tags: ["#天然色気", "#じわじわエロい", "#無自覚系", "#開花待ち"],
+  },
+  {
+    min: 40, max: 49,
     icon: "🌹",
     title: "情熱のバラタイプ",
     desc: "恋愛に情熱的で、好きになったら全力投球！ムードを大切にしながらも、ここぞという時の大胆さは本物。エロ度はバランスよく中程度で、相手を惹きつける絶妙な魅力を持っています。",
     tags: ["#情熱的", "#ロマンチスト", "#バランス型", "#引き出し多め"],
   },
   {
-    min: 36, max: 44,
+    min: 50, max: 59,
+    icon: "💜",
+    title: "ミステリアス色気タイプ",
+    desc: "エロ度は折り返しを超えてきました。普段はクールに見せながら、内側には確かな欲望が燃えているタイプ。その謎めいた雰囲気が相手をじわじわと虜にします。",
+    tags: ["#ミステリアス", "#クールビューティー", "#内なる炎", "#虜製造機"],
+  },
+  {
+    min: 60, max: 69,
+    icon: "🌙",
+    title: "夜の大人タイプ",
+    desc: "かなりエロいです。経験値も想像力も高く、相手をどう楽しませるかを本能的に理解しています。普段の落ち着いた雰囲気とのギャップが、関わった人を虜にしてしまう危険なタイプ。",
+    tags: ["#大人の色気", "#ギャップ危険", "#経験値高め", "#夜に強い"],
+  },
+  {
+    min: 70, max: 79,
     icon: "🔥",
     title: "灼熱のデビルタイプ",
-    desc: "かなり高めのエロ度！普段は普通に見えますが、内側には燃えるような情熱が渦巻いています。恋愛においては積極的で、相手をドキドキさせるのが得意。その魔性の魅力に気をつけて！",
+    desc: "相当なエロ度！普段は普通に見えますが、内側には燃えるような情熱が渦巻いています。恋愛においては積極的で、相手をドキドキさせるのが得意。その魔性の魅力に気をつけて！",
     tags: ["#魔性", "#積極的", "#ギャップ萌え", "#ドキドキ製造機"],
   },
   {
-    min: 45, max: 50,
+    min: 80, max: 100,
     icon: "👑",
     title: "伝説級のエロ王/エロ女王",
-    desc: "満点に近いエロ度……あなたは生粋の色気の塊です。フェロモンだだ漏れで、歩くだけで異性の視線を集めていることでしょう。その力を正しく（？）使ってくださいね！",
+    desc: "満点に迫るエロ度……あなたは生粋の色気の塊です。フェロモンだだ漏れで、歩くだけで異性の視線を集めていることでしょう。その力を正しく（？）使ってくださいね！",
     tags: ["#フェロモン全開", "#生まれながらの色気", "#罪な人", "#エロ界のレジェンド"],
   },
 ];
@@ -731,9 +773,10 @@ function showQuestion() {
   choicesEl.innerHTML = '';
 
   if (q.type === 'multi') {
+    const isRequired = currentQ >= 12;
     const hint = document.createElement('p');
     hint.className = 'multi-hint';
-    hint.textContent = '※ 複数選択できます';
+    hint.textContent = isRequired ? '※ 1つ以上選んでください（必須）' : '※ 複数選択できます';
     choicesEl.appendChild(hint);
 
     q.choices.forEach((c, i) => {
@@ -743,15 +786,25 @@ function showQuestion() {
       label.querySelector('input').addEventListener('change', function() {
         label.classList.toggle('selected', this.checked);
         label.querySelector('.check-box').textContent = this.checked ? '✓' : '';
+        if (isRequired) errMsg.style.display = 'none';
       });
       choicesEl.appendChild(label);
     });
+
+    const errMsg = document.createElement('p');
+    errMsg.style.cssText = 'color:#e74c3c; font-size:0.82rem; margin-top:8px; display:none;';
+    errMsg.textContent = '⚠ 必ず1つ以上選んでください';
+    choicesEl.appendChild(errMsg);
 
     const nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-next';
     nextBtn.textContent = '次へ ▶';
     nextBtn.onclick = () => {
       const checked = choicesEl.querySelectorAll('input[type="checkbox"]:checked');
+      if (isRequired && checked.length === 0) {
+        errMsg.style.display = 'block';
+        return;
+      }
       const selectedTexts = Array.from(checked).map(cb => cb.closest('label').textContent.trim());
       const maxScore = checked.length === 0 ? 0
         : Math.max(...Array.from(checked).map(cb => parseInt(cb.value)));
@@ -827,7 +880,7 @@ function showResult() {
   const maxScore = questions.length * 5;
   const percent = Math.round((totalScore / maxScore) * 100);
 
-  const result = results.find(r => totalScore >= r.min && totalScore <= r.max) || results[results.length - 1];
+  const result = results.find(r => percent >= r.min && percent <= r.max) || results[results.length - 1];
 
   document.getElementById('result-icon').textContent = result.icon;
   document.getElementById('score-display').textContent = percent;
