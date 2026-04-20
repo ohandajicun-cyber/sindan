@@ -664,19 +664,46 @@ ol.maru a:hover {
     #vio-quiz .result-links { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px; }
     #vio-quiz .result-links a img { max-width: 160px; transition: transform 0.2s; }
     #vio-quiz .result-links a:hover img { transform: translateY(-3px); }
+
+    #vio-quiz .creator-link {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 10px 20px; background: #fff0f5; border: 1.5px solid #f0c0d0;
+      border-radius: 99px; text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      width: fit-content; margin: 0 auto;
+    }
+    #vio-quiz .creator-link:hover { background: #ffe0ee; transform: translateY(-2px); }
+    #vio-quiz .creator-link img {
+      width: 34px; height: 34px; border-radius: 50%;
+      object-fit: cover; border: 2px solid #ff9ecb; flex-shrink: 0;
+    }
+    #vio-quiz .creator-link span {
+      font-size: 0.86rem; font-weight: bold; color: #c44569; white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      #vio-quiz .vio-btn { font-size: 0.95rem; padding: 13px 14px; }
+      #vio-quiz .vio-start-btn { padding: 14px 32px; font-size: 1rem; width: 100%; }
+      #vio-quiz .vio-retry-btn { width: 100%; }
+    }
   </style>
 
   <!-- スタート画面 -->
   <div id="vio-start" style="padding:20px 0;">
-    <p style="font-size:1rem; color:#555; line-height:1.9; margin-bottom:24px; text-align:center;">
+    <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener" style="margin-bottom:20px;">
+      <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+      <span>👩 この診断を作った人</span>
+    </a>
+    <p style="font-size:1rem; color:#555; line-height:1.9; margin-bottom:24px; text-align:center; margin-top:20px;">
       5問の質問に「はい」「いいえ」「わからない」で<br>お答えください。<br>
-      あなたのVIOタイプを自動診断します。
+      あなたのVIOタイプを自動診断します。<br>
+      AIによる画像診断を行うことでより正確な診断を行うことが可能です。
     </p>
     <div style="margin-bottom:16px;">
       <label style="display:block; font-size:0.9rem; font-weight:bold; color:#333; margin-bottom:6px;">
         お名前 <span style="color:#e74c3c; font-size:0.78rem;">必須</span>
       </label>
-      <input type="text" id="vio-input-name" placeholder="例：田中 花子"
+      <input type="text" id="vio-input-name" placeholder="名前（ニックネーム可能）"
         style="width:100%; padding:13px 16px; font-size:0.95rem; border:2px solid #e0e0e0; border-radius:12px; outline:none; font-family:inherit; transition:border-color 0.2s;"
         onfocus="this.style.borderColor='#b68bbd'" onblur="this.style.borderColor='#e0e0e0'">
       <p id="vio-err-name" style="display:none; color:#e74c3c; font-size:0.8rem; margin-top:4px;">お名前を入力してください</p>
@@ -685,13 +712,23 @@ ol.maru a:hover {
       <label style="display:block; font-size:0.9rem; font-weight:bold; color:#333; margin-bottom:6px;">
         年齢 <span style="color:#e74c3c; font-size:0.78rem;">必須</span>
       </label>
-      <input type="number" id="vio-input-age" placeholder="例：25" min="10" max="110"
+      <input type="number" id="vio-input-age" placeholder="例：20" min="12" max="110"
         style="width:100%; padding:13px 16px; font-size:0.95rem; border:2px solid #e0e0e0; border-radius:12px; outline:none; font-family:inherit; transition:border-color 0.2s;"
         onfocus="this.style.borderColor='#b68bbd'" onblur="this.style.borderColor='#e0e0e0'">
-      <p id="vio-err-age" style="display:none; color:#e74c3c; font-size:0.8rem; margin-top:4px;">正しい年齢を入力してください（10〜110）</p>
+      <p id="vio-err-age" style="display:none; color:#e74c3c; font-size:0.8rem; margin-top:4px;">正しい年齢を入力してください（12〜110）</p>
     </div>
     <div style="text-align:center;">
       <button class="vio-start-btn" onclick="vioPreStart()">診断スタート ▶</button>
+    </div>
+    <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener" style="margin-top:20px;">
+      <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+      <span>👩 この診断を作った人</span>
+    </a>
+    <div style="text-align:center; margin-top:16px;">
+      <a href="https://ohandajicun-cyber.github.io/sindan/index.html"
+        style="font-size:0.85rem; color:#aaa; text-decoration:none; border-bottom:1px solid #ddd; padding-bottom:1px;">
+        ← 最初に戻る
+      </a>
     </div>
   </div>
 
@@ -723,7 +760,7 @@ ol.maru a:hover {
         <div id="vio-progress" style="height:100%; width:0%; background:linear-gradient(90deg,#b68bbd,#CB6C9B); border-radius:99px; transition:width 0.4s;"></div>
       </div>
     </div>
-    <p id="vio-q-text" style="font-size:1.6rem; font-weight:bold; color:#333; line-height:1.7; margin-bottom:28px; min-height:54px;"></p>
+    <p id="vio-q-text" style="font-size:clamp(1.15rem, 4.5vw, 1.6rem); font-weight:bold; color:#333; line-height:1.7; margin-bottom:28px; min-height:54px;"></p>
     <button class="vio-btn" onclick="vioAnswer(true)">はい</button>
     <button class="vio-btn vio-btn-no" onclick="vioAnswer(false)">いいえ</button>
     <button class="vio-btn vio-btn-unknown" onclick="vioAnswer(null)">わからない</button>
@@ -863,7 +900,7 @@ ol.maru a:hover {
 <section id="sindan-section" style="display:none; padding:30px 10px;">
 <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js"></script>
 
-<div id="sindan-wrap" style="background:white; border-radius:24px; padding:32px 24px; max-width:580px; width:100%; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.12); font-family:'Hiragino Kaku Gothic ProN','メイリオ',sans-serif;">
+<div id="sindan-wrap" style="background:white; border-radius:24px; padding:clamp(20px, 5vw, 32px) clamp(14px, 4vw, 24px); max-width:580px; width:100%; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.12); font-family:'Hiragino Kaku Gothic ProN','メイリオ',sans-serif;">
 
   <style>
     #sindan-wrap * { box-sizing: border-box; }
@@ -1014,6 +1051,16 @@ ol.maru a:hover {
     }
     @keyframes sw-spin { to { transform: rotate(360deg); } }
 
+    @media (max-width: 480px) {
+      #sindan-wrap .sw-send-section { padding: 16px 14px; }
+      #sindan-wrap .sw-upload-choice-row { flex-direction: column; }
+      #sindan-wrap .sw-upload-choice-btn { flex-direction: row; justify-content: center; padding: 14px 12px; }
+      #sindan-wrap .sw-btn-next,
+      #sindan-wrap .sw-btn-back,
+      #sindan-wrap .sw-btn-primary { font-size: 0.95rem; padding: 13px; }
+      #sindan-wrap .sw-section-title { font-size: 0.92rem; }
+    }
+
     #sindan-wrap .sw-progress-bar-wrap {
       background: #f0f0f0; border-radius: 99px;
       height: 6px; margin-top: 8px; overflow: hidden; display: none;
@@ -1159,11 +1206,23 @@ ol.maru a:hover {
   <div class="sw-screen" id="sw-screen-step4">
     <div style="text-align:center; margin-top:24px; margin-bottom:24px;">
       <p style="font-size:0.85rem; color:#555; line-height:1.8; margin-bottom:20px;">
-        あなたに似合う下着はこちら<br>何回かやることで精度があがって結果が変わるよ♪
+        あなたのVIOタイプに合った商品はこちら<br>何回かやることで精度があがって結果が変わるよ♪
       </p>
       <div id="sw-url-card"></div>
     </div>
     <button class="sw-btn-back" onclick="swGoBackToStep3()">← 戻る</button>
+    <div style="text-align:center; margin-top:16px; display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <button onclick="vioReset()"
+        style="width:100%; padding:13px; background:linear-gradient(135deg,#b68bbd,#CB6C9B); color:white; border:none; border-radius:99px; font-size:0.95rem; font-weight:bold; cursor:pointer; font-family:inherit; transition:all 0.2s;"
+        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        もう一度診断をやり直す
+      </button>
+      <a href="https://ohandajicun-cyber.github.io/sindan/index.html"
+        style="display:inline-block; width:100%; text-align:center; font-size:0.9rem; color:#b68bbd; font-weight:bold; text-decoration:none; border:2px solid #b68bbd; border-radius:99px; padding:11px 28px; transition:all 0.2s; box-sizing:border-box;"
+        onmouseover="this.style.background='#faf5ff'" onmouseout="this.style.background='transparent'">
+        診断一覧に戻る
+      </a>
+    </div>
   </div>
 
   <!-- 完了 -->
@@ -1349,15 +1408,7 @@ ol.maru a:hover {
 
   function swGoToStep4() {
     swSendQuizResults();
-    var urls = [
-      'https://www.wakudoki.ne.jp/productdetail/42346031/1/',
-      'https://ravijour.com/products/detail.php?product_id=3893&c=5',
-      'https://www.wakudoki.ne.jp/productdetail/c2226hm036ts/1/?bid=272&swrd=c2226hm036',
-      'https://www.peachjohn.co.jp/shop/g/g10326500109/',
-      'https://zozo.jp/shop/darial/goods-sale/96964914/?did=156606130&rid=1203',
-      'https://ravijour.com/products/detail.php?product_id=3824&c=7',
-    ];
-    var url = urls[Math.floor(Math.random() * urls.length)];
+    var url = window.vioWinnerLink || 'https://ravia.jp/check/type-d/';
     var domain = new URL(url).hostname;
     document.getElementById('sw-url-card').innerHTML =
       '<a href="' + url + '" target="_blank" style="text-decoration:none; display:block;">' +
@@ -1377,7 +1428,6 @@ ol.maru a:hover {
           '</div>' +
         '</div>' +
       '</a>';
-    swUpdateStepUI(4);
     swShowScreen('sw-screen-step4');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
