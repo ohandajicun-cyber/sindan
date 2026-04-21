@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ムラムラ度診断</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      background: linear-gradient(135deg, #ff6b9d, #c44569, #f8b500);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    /* ===== TITLE SCREEN ===== */
+    #title-screen h1 {
+      font-size: 2.4rem;
+      color: #c44569;
+      margin-bottom: 8px;
+    }
+    #title-screen .subtitle {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+    }
+    #title-screen .mascot {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      display: block;
+    }
+    #title-screen p {
+      color: #555;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+
+    /* ===== QUESTION SCREEN ===== */
+    #question-screen { display: none; }
+
+    .progress-bar-wrap {
+      background: #f0f0f0;
+      border-radius: 99px;
+      height: 10px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b9d, #f8b500);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    .q-number {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    .q-text {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .choice-btn {
+      background: #fff;
+      border: 2px solid #f0c0d0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .choice-btn:hover {
+      background: #fff0f5;
+      border-color: #c44569;
+      color: #c44569;
+      transform: translateY(-2px);
+    }
+    .choice-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ===== MULTI-SELECT ===== */
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 2px solid #f0c0d0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      user-select: none;
+    }
+    .check-label:hover {
+      background: #fff0f5;
+      border-color: #c44569;
+      color: #c44569;
+    }
+    .check-label.selected {
+      background: #fff0f5;
+      border-color: #c44569;
+      color: #c44569;
+      font-weight: bold;
+    }
+    .check-label input[type="checkbox"] { display: none; }
+    .check-box {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f0c0d0;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+    .check-label.selected .check-box {
+      background: #c44569;
+      border-color: #c44569;
+      color: white;
+    }
+    .multi-hint {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .btn-next {
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    /* ===== RESULT SCREEN ===== */
+    #result-screen { display: none; }
+    .result-icon { font-size: 5rem; margin-bottom: 16px; display: block; }
+    .result-label {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #c44569;
+      margin-bottom: 6px;
+    }
+    .score-display {
+      font-size: 3.5rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #ff6b9d, #f8b500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+    .score-label { font-size: 0.85rem; color: #aaa; margin-bottom: 20px; }
+
+    .meter-wrap {
+      background: #f0f0f0;
+      border-radius: 99px;
+      height: 20px;
+      margin: 0 auto 24px;
+      max-width: 340px;
+      overflow: hidden;
+    }
+    .meter-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #ffb3cc, #ff6b9d, #c44569);
+      transition: width 1s cubic-bezier(.17,.84,.44,1);
+      width: 0%;
+    }
+
+    .result-desc {
+      background: #fff8fa;
+      border-left: 4px solid #ff6b9d;
+      border-radius: 8px;
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+    .tag {
+      background: #fff0f5;
+      color: #c44569;
+      border: 1px solid #f5c0d0;
+      border-radius: 99px;
+      padding: 4px 14px;
+      font-size: 0.8rem;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      background: linear-gradient(135deg, #ff6b9d, #c44569);
+      color: white;
+      border: none;
+      border-radius: 99px;
+      padding: 16px 40px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-block;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(196,69,105,0.35);
+    }
+    .btn-secondary {
+      background: white;
+      color: #c44569;
+      border: 2px solid #c44569;
+      margin-top: 12px;
+    }
+    .btn-secondary:hover {
+      background: #fff0f5;
+      box-shadow: 0 4px 12px rgba(196,69,105,0.15);
+    }
+
+    #name-input {
+      display: block;
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1rem;
+      border: 2px solid #f0c0d0;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+    #name-input:focus {
+      border-color: #c44569;
+    }
+
+    .share-label {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin: 20px 0 10px;
+    }
+    .share-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .share-btn {
+      border: none;
+      border-radius: 99px;
+      padding: 12px 18px;
+      font-size: 0.88rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .share-x    { background: #000; color: #fff; }
+    .share-line { background: #06c755; color: #fff; }
+    .share-insta {
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #fff;
+    }
+
+    .note {
+      font-size: 0.72rem;
+      color: #bbb;
+      margin-top: 20px;
+    }
+
+    .creator-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: #fff0f5;
+      border: 1.5px solid #f0c0d0;
+      border-radius: 99px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      margin: 16px auto 0;
+      width: fit-content;
+    }
+    .creator-link:hover {
+      background: #ffe0ee;
+      transform: translateY(-2px);
+    }
+    .creator-link img {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ff9ecb;
+      flex-shrink: 0;
+    }
+    .creator-link span {
+      font-size: 0.86rem;
+      font-weight: bold;
+      color: #c44569;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TITLE -->
+  <div id="title-screen">
+    <span class="mascot">🔥</span>
+    <h1>あなたの今のムラムラ度は？</h1>
+    <p class="subtitle">今この瞬間の本音を暴きます</p>
+    <p>6つの質問に正直に答えてね。<br>今のあなたのムラムラ度を測定します🔥</p>
+    <input type="text" id="name-input" placeholder="あなたの名前を入力してください" maxlength="30">
+    <button class="btn" onclick="startQuiz()">診断スタート ▶</button>
+    <p class="note">※ これはお遊びの診断です。どこまで垢抜けたヘムたいかわかるよ。</p>
+    <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener">
+      <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+      <span>👩 この診断を作った人</span>
+    </a>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="question-screen">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <p class="q-number" id="q-number">質問 1 / 5</p>
+    <p class="q-text" id="q-text"></p>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen">
+    <span class="result-icon" id="result-icon"></span>
+    <p class="result-label">あなたのムラムラ度は…</p>
+    <div class="score-display" id="score-display"></div>
+    <p class="score-label">/ 100点</p>
+    <div class="meter-wrap"><div class="meter-bar" id="meter-bar"></div></div>
+    <p class="result-title" id="result-title"></p>
+    <div class="result-desc" id="result-desc"></div>
+    <div class="tags" id="result-tags"></div>
+    <button class="btn" onclick="retryQuiz()">もう一度診断する</button>
+    <br>
+    <button class="btn btn-secondary" onclick="sendEmail()">📧 メールで送信</button>
+    <div class="share-label">結果をシェアする</div>
+    <div class="share-buttons">
+      <button class="share-btn share-x" onclick="shareX()">𝕏 でシェア</button>
+      <button class="share-btn share-line" onclick="shareLINE()">💬 LINEで送る</button>
+      <button class="share-btn share-insta" onclick="shareInstagram()">📸 インスタ用コピー</button>
+    </div>
+    <p class="note">※ 診断結果はお遊びです。真に受けないでね！</p>
+    <a href="https://ohandajicun-cyber.github.io/sindan/" style="display:block; margin-top:16px; padding:13px 0; background:white; color:#c44569; border:2px solid #c44569; border-radius:12px; font-size:0.95rem; font-weight:bold; text-decoration:none; text-align:center; transition:background 0.2s;"
+      onmouseover="this.style.background='#fff0f5'" onmouseout="this.style.background='white'">
+      🏠 トップに戻る
+    </a>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    text: "🔥 あなたの今のアソコの様子は？",
+    choices: [
+      { text: "とても硬いです！／とても濡れてます！", score: 5 },
+      { text: "大きくなってます／濡れてます！",       score: 3 },
+      { text: "小さいです／濡れてません",             score: 1 },
+    ]
+  },
+  {
+    text: "💭 あなたは今、エッ！な事を考えていますか？",
+    choices: [
+      { text: "はい///",                        score: 5 },
+      { text: "少しだけ考えています(〃ω〃)",    score: 3 },
+      { text: "考えてないです",                  score: 1 },
+    ]
+  },
+  {
+    text: "⏰ あなたは今、時間があればエッ！なことを…？",
+    choices: [
+      { text: "今すぐしたいです❤︎もう待てません///", score: 5 },
+      { text: "はい、そのときにします❤︎",           score: 3 },
+      { text: "しないです！",                       score: 1 },
+    ]
+  },
+  {
+    text: "📝 あなたは今、この後のエッ！にする事を計画してますか？",
+    choices: [
+      { text: "してます❤︎",                   score: 5 },
+      { text: "いつもしてることだけど///",    score: 3 },
+      { text: "していないよ。",               score: 1 },
+    ]
+  },
+  {
+    text: "👨‍👩‍👧 もしも家族や知人が家の中にいたとしても、エッ！なことは？",
+    choices: [
+      { text: "我慢できない❤︎しちゃうよ！", score: 5 },
+      { text: "様子見てからします❤︎",       score: 3 },
+      { text: "しません...",                 score: 1 },
+    ]
+  },
+  {
+    text: "💗 今、むらむらしてますか？",
+    choices: [
+      { text: "はい、めちゃくちゃむらむらしてます！", score: 5 },
+      { text: "少しむらむらしてるかも…",             score: 3 },
+      { text: "していないです",                      score: 1 },
+    ]
+  },
+];
+
+const results = [
+  {
+    min: 0, max: 33,
+    icon: "😌",
+    title: "穏やか賢者タイプ",
+    desc: "今のあなたのムラムラ度はとっても低め。心が凪いでいて、煩悩から解放された賢者モードです。この調子で心穏やかな時間を過ごしてね。",
+    tags: ["#賢者モード", "#ムラムラゼロ", "#心は平穏", "#悟りの境地"],
+  },
+  {
+    min: 34, max: 66,
+    icon: "🌸",
+    title: "ほんのりピンクタイプ",
+    desc: "ムラムラ度は中程度。言われてみれば…くらいのほんのりした気分。このまま火がつくかどうかは、あなた次第かも？タイミングが合えば一気に燃え上がるタイプ。",
+    tags: ["#ほんのりピンク", "#火種あり", "#タイミング次第", "#スイッチ待機中"],
+  },
+  {
+    min: 67, max: 100,
+    icon: "🔥",
+    title: "ムラムラMAXタイプ",
+    desc: "ムラムラ度が振り切れてます！今すぐ誰かに会いたい、触れたい、そんな気持ちが抑えられない状態。深呼吸して落ち着いて…でも、その情熱は魅力でもあるよ🔥",
+    tags: ["#ムラムラMAX", "#欲望全開", "#今すぐ誰か", "#情熱の塊"],
+  },
+];
+
+let currentQ = 0;
+let totalScore = 0;
+let userName = '';
+let userAnswers = [];
+
+function startQuiz() {
+  const nameInput = document.getElementById('name-input').value.trim();
+  if (!nameInput) {
+    document.getElementById('name-input').focus();
+    document.getElementById('name-input').style.borderColor = '#e74c3c';
+    return;
+  }
+  userName = nameInput;
+  currentQ = 0;
+  totalScore = 0;
+  userAnswers = [];
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('question-screen').style.display = 'block';
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('q-number').textContent = `質問 ${currentQ + 1} / ${questions.length}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-bar').style.width = `${(currentQ / questions.length) * 100}%`;
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+
+  if (q.type === 'multi') {
+    const isRequired = currentQ >= 12;
+    const hint = document.createElement('p');
+    hint.className = 'multi-hint';
+    hint.textContent = isRequired ? '※ 1つ以上選んでください（必須）' : '※ 複数選択できます';
+    choicesEl.appendChild(hint);
+
+    q.choices.forEach((c, i) => {
+      const label = document.createElement('label');
+      label.className = 'check-label';
+      label.innerHTML = `<input type="checkbox" value="${c.score}"><span class="check-box"></span>${c.text}`;
+      label.querySelector('input').addEventListener('change', function() {
+        label.classList.toggle('selected', this.checked);
+        label.querySelector('.check-box').textContent = this.checked ? '✓' : '';
+        if (isRequired) errMsg.style.display = 'none';
+      });
+      choicesEl.appendChild(label);
+    });
+
+    const errMsg = document.createElement('p');
+    errMsg.style.cssText = 'color:#e74c3c; font-size:0.82rem; margin-top:8px; display:none;';
+    errMsg.textContent = '⚠ 必ず1つ以上選んでください';
+    choicesEl.appendChild(errMsg);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-next';
+    nextBtn.textContent = '次へ ▶';
+    nextBtn.onclick = () => {
+      const checked = choicesEl.querySelectorAll('input[type="checkbox"]:checked');
+      if (isRequired && checked.length === 0) {
+        errMsg.style.display = 'block';
+        return;
+      }
+      const selectedTexts = Array.from(checked).map(cb => cb.closest('label').textContent.trim());
+      const maxScore = checked.length === 0 ? 0
+        : Math.max(...Array.from(checked).map(cb => parseInt(cb.value)));
+      const answerText = checked.length === 0 ? '（未選択）' : selectedTexts.join('、');
+      selectAnswer(maxScore, answerText);
+    };
+    choicesEl.appendChild(nextBtn);
+  } else {
+    q.choices.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.text;
+      btn.onclick = () => selectAnswer(c.score, c.text);
+      choicesEl.appendChild(btn);
+    });
+  }
+}
+
+function selectAnswer(score, answerText) {
+  const q = questions[currentQ];
+  userAnswers.push({ q: q.text.replace(/^[\p{Emoji}\s]+/u, '').trim(), a: answerText });
+  totalScore += score;
+  currentQ++;
+  if (currentQ < questions.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+async function notifyDiscord(score, title, desc, tags) {
+  const webhookUrl = 'https://discord.com/api/webhooks/1484952127636766813/2-NION7yXYoka_gNSTYolxnGG3zadTOssZ2-WZL7Tjc3MRPk4UO3uAEygQ1Z6W1K0edf';
+  const answersText = userAnswers.map((a, i) => `**Q${i+1}. ${a.q}**\n→ ${a.a}`).join('\n\n');
+  const chunkSize = 1000;
+  const answerFields = [];
+  for (let i = 0; i < answersText.length; i += chunkSize) {
+    answerFields.push({
+      name: i === 0 ? '📋 回答内容' : '📋 回答内容（続き）',
+      value: answersText.slice(i, i + chunkSize),
+    });
+  }
+  const payload = {
+    embeds: [{
+      title: '🔥 ムラムラ度診断 結果通知',
+      color: 0xc44569,
+      fields: [
+        { name: '名前', value: userName || '匿名', inline: true },
+        { name: 'ムラムラ度スコア', value: `${score} / 100点`, inline: true },
+        { name: '診断タイプ', value: title, inline: false },
+        { name: 'コメント', value: desc },
+        { name: 'タグ', value: tags },
+        ...answerFields,
+      ],
+      timestamp: new Date().toISOString(),
+    }]
+  };
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.error('Discord通知失敗:', e);
+  }
+}
+
+function showResult() {
+  document.getElementById('question-screen').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+
+  const maxScore = questions.length * 5;
+  const percent = Math.round((totalScore / maxScore) * 100);
+
+  const result = results.find(r => percent >= r.min && percent <= r.max) || results[results.length - 1];
+
+  document.getElementById('result-icon').textContent = result.icon;
+  document.getElementById('score-display').textContent = percent;
+  document.getElementById('result-title').textContent = result.title;
+  document.getElementById('result-desc').textContent = result.desc;
+
+  const tagsEl = document.getElementById('result-tags');
+  tagsEl.innerHTML = '';
+  result.tags.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = t;
+    tagsEl.appendChild(span);
+  });
+
+  setTimeout(() => {
+    document.getElementById('meter-bar').style.width = percent + '%';
+  }, 100);
+
+  const tags = result.tags.join(' ');
+  notifyDiscord(percent, result.title, result.desc, tags);
+}
+
+function retryQuiz() {
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('title-screen').style.display = 'block';
+  document.getElementById('name-input').value = '';
+  document.getElementById('name-input').style.borderColor = '#f0c0d0';
+}
+
+function getShareText() {
+  const score = document.getElementById('score-display').textContent;
+  const title = document.getElementById('result-title').textContent;
+  const url = 'https://ohandajicun-cyber.github.io/sindan/';
+  return `【ムラムラ度診断】\n私のムラムラ度は ${score}/100点！\n診断結果：${title}\n\nあなたも試してみて👇\n${url}\n\n#ムラムラ度診断`;
+}
+
+function shareX() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+}
+
+function shareLINE() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+}
+
+function shareInstagram() {
+  const text = getShareText();
+  navigator.clipboard.writeText(text).then(() => {
+    alert('コピーしました！\nインスタグラムを開いて投稿に貼り付けてね📸');
+  }).catch(() => {
+    prompt('以下をコピーしてインスタに貼り付けてね：', text);
+  });
+}
+
+function sendEmail() {
+  const score = document.getElementById('score-display').textContent;
+  const title = document.getElementById('result-title').textContent;
+  const desc = document.getElementById('result-desc').textContent;
+  const tags = Array.from(document.querySelectorAll('#result-tags .tag')).map(t => t.textContent).join(' ');
+
+  const to = 'ohandajicun@gmail.com';
+  const subject = encodeURIComponent(`【ムラムラ度診断】結果: ${title}`);
+  const body = encodeURIComponent(
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `　ムラムラ度診断 結果レポート\n` +
+    `━━━━━━━━━━━━━━━━━━\n\n` +
+    `ムラムラ度スコア: ${score} / 100点\n` +
+    `診断タイプ:   ${title}\n\n` +
+    `【診断コメント】\n${desc}\n\n` +
+    `【タグ】\n${tags}\n\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `※ これはお遊び診断です。科学的根拠はありません。`
+  );
+
+  window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+}
+</script>
+</body>
+</html>
