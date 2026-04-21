@@ -147,6 +147,10 @@
       cursor: pointer; transition: all 0.2s;
     }
     .btn-multi-next:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(168,85,247,0.35); }
+    .required-msg {
+      color: #ec4899; font-size: 0.82rem; margin-top: 8px;
+      display: none;
+    }
 
     /* ===== RESULT ===== */
     #result-screen { display: none; }
@@ -296,6 +300,10 @@
     .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
     .share-x    { background: #000; color: #fff; }
     .share-line { background: #06c755; color: #fff; }
+    .share-insta {
+      background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #fff;
+    }
 
     .note {
       font-size: 0.72rem;
@@ -476,6 +484,7 @@
     <div class="share-buttons">
       <button class="share-btn share-x" onclick="shareX()">𝕏 でシェア</button>
       <button class="share-btn share-line" onclick="shareLINE()">💬 LINEで送る</button>
+      <button class="share-btn share-insta" onclick="shareInstagram()">📸 インスタ用コピー</button>
     </div>
     <p class="note">※ この診断はウェルネス・自己理解を目的としたコンテンツです。</p>
     <a class="back-link" href="https://ohandajicun-cyber.github.io/sindan/">🏠 トップに戻る</a>
@@ -604,79 +613,94 @@
         { text: "会ってHする",          pt: 3 },
       ]
     },
+    {
+      text: "📱 リンク送ってくれた人とどこまでできる？（複数選択可）",
+      type: 'multi',
+      choices: [
+        { text: "まだわかんない",                   pt: 1 },
+        { text: "なにもできない",                   pt: 1 },
+        { text: "なかよくなってから全部したい",     pt: 1 },
+        { text: "チャットで言葉責め",               pt: 1 },
+        { text: "写真で見せ合い",                   pt: 2 },
+        { text: "動画を送る",                       pt: 2 },
+        { text: "通話でオナ電",                     pt: 3 },
+        { text: "ビデ通でオナ電",                   pt: 3 },
+        { text: "会ってHする",                      pt: 3 },
+      ]
+    },
   ];
 
   const results = [
     {
       min: 0, max: 9,
-      icon: "🌱",
-      title: "ほぼ未経験タイプ",
-      desc: "おなにーとはまだほとんど縁がないようです。恥ずかしさや罪悪感があるかもしれませんが、自分の体を知ることはとても自然なこと。焦らず、まずは自分に優しくしてあげることから始めてみましょう。",
-      advice: ["まずは「悪いことではない」と自分に許可を出してあげよう", "お風呂の中など、リラックスした環境から始めてみよう", "自分のペースでゆっくり探求すればOK"],
-      tags: ["#未経験", "#自己探求スタート"],
+      icon: "🕊️",
+      title: "まだまだこれからタイプ",
+      desc: "おなにーとはほぼ無縁か、まだ罪悪感があるようです。でも自分の体を知ることは、とても自然で大切なこと。まずは「悪いことではない」と自分に許してあげるところから始めましょう。",
+      advice: ["「自分を気持ちよくする＝自分を大切にすること」と知ろう", "お風呂やベッドの中など、リラックスできる場所から始めてみよう", "焦らず、自分のペースで少しずつでOK"],
+      tags: ["#スタートライン", "#自分を大切に", "#これから探求"],
     },
     {
       min: 10, max: 19,
-      icon: "🌿",
-      title: "おなにー入門タイプ",
-      desc: "少しずつ自分の体と向き合い始めているようです。まだ戸惑いや罪悪感が残っているかもしれませんが、それは自然なこと。一歩ずつ、自分のペースで進んでいきましょう。",
-      advice: ["おなにーはストレス発散や睡眠改善にも効果的だよ", "周りを気にせず、自分だけの時間を大切にしよう", "まずは自分が心地よいと感じる方法を探してみよう"],
-      tags: ["#入門", "#マイペース", "#自己探求"],
+      icon: "🌱",
+      title: "おそるおそる入門タイプ",
+      desc: "少し経験はあるけれど、まだ戸惑いや照れがある段階。おなにーはストレス解消・睡眠改善・自己理解にも役立つ立派なセルフケアです。自分のペースで一歩ずつ進めてみましょう。",
+      advice: ["「ドキドキ」も含めて楽しんでいいんだよ", "夜寝る前など、ゆったりした時間帯にやってみよう", "まずは自分が心地よいと感じる感触やリズムを探してみよう"],
+      tags: ["#入門", "#マイペース", "#自己探求中"],
     },
     {
       min: 20, max: 29,
       icon: "🌸",
-      title: "目覚め始めたタイプ",
-      desc: "自分の体への興味が芽生え始めています。少しずつ自分の体のことがわかってきているはず。もう少し丁寧に向き合うと、より豊かな時間になりますよ。",
-      advice: ["おなにー後のリラックス感を大切にしよう", "自分の好きな感触やリズムをゆっくり探求してみよう", "自分の体の声をもっと聞いてみよう"],
-      tags: ["#目覚め", "#成長中", "#自己探求"],
+      title: "じわじわ目覚めタイプ",
+      desc: "自分の体への興味が少しずつ膨らんできています。好きな感触や気持ちいいポイントが少しわかってきたのでは？焦らず丁寧に自分と向き合うと、もっと豊かな時間になりますよ。",
+      advice: ["終わった後のリラックス感や心の変化に注目してみよう", "自分の好きな雰囲気や環境を整えてみよう", "「気持ちいい」に素直になっていい"],
+      tags: ["#目覚め", "#自分を知る", "#成長中"],
     },
     {
       min: 30, max: 39,
       icon: "💐",
-      title: "ちょっと慣れてきたタイプ",
-      desc: "おなにーが少しずつ日常に馴染んできています。自分の体についての理解が深まりつつあり、リラックスや気分転換に活用できているようです。",
-      advice: ["自分の好きなポイントをもっと探求してみよう", "環境や雰囲気にも少しこだわってみると楽しくなるよ", "おなにーを「自分へのご褒美」として楽しもう"],
-      tags: ["#成長中", "#自己理解", "#慣れてきた"],
+      title: "慣れてきた中堅タイプ",
+      desc: "おなにーが日常の一部として馴染んできています。自分の体の反応もだんだんわかってきているはず。気分転換やリフレッシュに役立てられているなら、立派なセルフケアの実践者です。",
+      advice: ["いつものやり方に慣れたら、少しだけ変化をつけてみよう", "おなにーを「自分へのご褒美タイム」として意識しよう", "体だけでなく、気持ちの変化にも目を向けてみよう"],
+      tags: ["#慣れてきた", "#自己理解", "#セルフケア実践"],
     },
     {
       min: 40, max: 49,
       icon: "💜",
-      title: "中級者タイプ",
-      desc: "自分の体のことをだいぶ把握できています。おなにーをストレス発散や気分転換にうまく使えているようです。さらに深く自分と向き合うと、もっと豊かな時間が作れますよ。",
-      advice: ["自分の体の敏感なポイントをしっかり把握しよう", "ゆっくりじっくり時間をかけて楽しんでみよう", "気持ちいい体勢や環境を整えてみよう"],
+      title: "中級探求タイプ",
+      desc: "自分の体についてかなり把握できてきています。おなにーをストレス発散や気分転換にうまく使えているようです。さらにじっくり時間をかけて向き合うと、もっと深い充実感が得られますよ。",
+      advice: ["敏感なポイントをさらに細かく把握してみよう", "ゆっくり時間をかけて楽しむ「丁寧なおなにー」も試してみよう", "自分の体に感謝する気持ちを忘れずに"],
       tags: ["#中級者", "#自己理解", "#ウェルネス"],
     },
     {
       min: 50, max: 59,
       icon: "✨",
-      title: "積極的探求タイプ",
-      desc: "自分の体に対して積極的に向き合えています。おなにーを楽しめているだけでなく、自己理解にも役立てているようです。この調子で自分をもっと知っていきましょう。",
-      advice: ["新しい方法やリズムにもチャレンジしてみよう", "おなにーを通じて自分の感情の変化にも注目してみよう", "自分の体への感謝を忘れずに"],
-      tags: ["#積極的", "#探求心", "#自己理解"],
+      title: "積極的セルフラブタイプ",
+      desc: "自分の体に積極的に向き合えていて、おなにーを心から楽しめています。自己理解も深まりつつあり、生活のリズムや気分管理にもうまく活かせているようです。",
+      advice: ["新しいやり方や体勢にも積極的にチャレンジしてみよう", "好きな音楽や香りなど、環境にこだわってみるとさらに充実するよ", "自分の感情の変化にも注目してみよう"],
+      tags: ["#積極的", "#セルフラブ", "#探求心"],
     },
     {
       min: 60, max: 69,
       icon: "🔥",
-      title: "かなり慣れてるタイプ",
-      desc: "自分の体のことをよく知っていて、おなにーを上手に楽しめています。ストレス管理や睡眠にも活用できていそう。さらにレベルアップできそうな予感がします！",
-      advice: ["今の習慣をベースにさらに深く探求してみよう", "自分の体の変化や反応を丁寧に観察してみよう", "心と体のバランスを意識して楽しもう"],
+      title: "自分をよく知る上級寄りタイプ",
+      desc: "自分の体のことをよく理解していて、おなにーを多面的に活用できています。ストレス管理・睡眠改善・自己表現など、セルフケアとして本格的に使いこなしている段階です。",
+      advice: ["今の習慣をさらに深く掘り下げてみよう", "自分の体の変化や反応を細かく観察してみよう", "心と体のバランスを意識しながら楽しもう"],
       tags: ["#上級寄り", "#自己理解", "#ウェルネス上級"],
     },
     {
       min: 70, max: 79,
       icon: "💎",
-      title: "上級者タイプ",
-      desc: "自分の体と心をよく理解していて、おなにーを豊かなセルフケアとして活用できています。自己理解・ストレス管理・睡眠改善と、多方面で効果を実感しているはずです。",
-      advice: ["これまでの経験を活かしてさらに深く楽しもう", "自分に合ったリズムや習慣を大切にしよう", "心身のバランスを意識したセルフケアを続けよう"],
+      title: "セルフケア上級者タイプ",
+      desc: "自分の体と心を深く理解し、おなにーを豊かなセルフケアとして使いこなしています。自己理解・ストレス管理・睡眠改善のすべてで効果を実感できているはずです。",
+      advice: ["これまでの経験を活かしてさらに深く楽しもう", "自分に合ったリズムや習慣を大切にし続けよう", "心身のバランスを意識したセルフケアを続けよう"],
       tags: ["#上級者", "#セルフケア達人", "#自己理解"],
     },
     {
       min: 80, max: 89,
       icon: "👑",
       title: "エキスパートタイプ",
-      desc: "自分の体を深く理解し、おなにーをセルフウェルネスとして完全に使いこなしています。その自己理解の深さは本物です！自分を大切にできている証拠ですよ。",
-      advice: ["今の豊かな習慣を大切にし続けよう", "自分の経験を自信につなげていこう", "さらに上を目指して新しい探求も楽しんでみよう"],
+      desc: "自分の体を深く理解し、おなにーをセルフウェルネスとして完全に使いこなしています。その自己理解の深さは本物。自分をこれだけ大切にできているのは、本当にすごいことです！",
+      advice: ["今の豊かな習慣を大切にし続けよう", "自分の経験や感覚を自信につなげていこう", "フェムテクアイテムなどで新しい体験にも挑戦してみよう"],
       tags: ["#エキスパート", "#セルフウェルネス", "#ボディポジティブ"],
     },
     {
@@ -732,7 +756,7 @@
     if (q.type === 'multi') {
       const hint = document.createElement('p');
       hint.className = 'multi-hint';
-      hint.textContent = '※ 複数選択できます';
+      hint.textContent = '※ 1つ以上選択してください（複数選択可）';
       choicesEl.appendChild(hint);
 
       q.choices.forEach((c) => {
@@ -749,16 +773,23 @@
       const nextBtn = document.createElement('button');
       nextBtn.className = 'btn-multi-next';
       nextBtn.textContent = '次へ ▶';
+      const errMsg = document.createElement('p');
+      errMsg.className = 'required-msg';
+      errMsg.textContent = '⚠️ 1つ以上選択してください';
       nextBtn.onclick = () => {
         const checked = choicesEl.querySelectorAll('input[type="checkbox"]:checked');
-        const pt = checked.length === 0 ? 0
-          : Math.max(...Array.from(checked).map(cb => parseInt(cb.value)));
+        if (checked.length === 0) {
+          errMsg.style.display = 'block';
+          return;
+        }
+        errMsg.style.display = 'none';
+        const pt = Math.max(...Array.from(checked).map(cb => parseInt(cb.value)));
         const selectedTexts = Array.from(checked).map(cb => cb.closest('label').textContent.trim());
         if (selectedTexts.some(t => t.includes('おもちゃを使う'))) selectedToy = true;
-        const answerText = selectedTexts.length === 0 ? '（未選択）' : selectedTexts.join('、');
-        selectChoice(pt, answerText);
+        selectChoice(pt, selectedTexts.join('、'));
       };
       choicesEl.appendChild(nextBtn);
+      choicesEl.appendChild(errMsg);
     } else {
       q.choices.forEach((c) => {
         const btn = document.createElement('button');
@@ -872,11 +903,11 @@
     const resultEl = document.getElementById('result-screen');
     resultEl.style.display = 'block';
 
+    displayScore = Math.round(totalScore / 30 * 100);
     const r = results.find(r => displayScore >= r.min && displayScore <= r.max) || results[results.length - 1];
 
     document.getElementById('result-icon').textContent = r.icon;
     document.getElementById('name-display').textContent = `${userName} さんの診断結果`;
-    displayScore = Math.round(totalScore / 30 * 100);
     document.getElementById('score-display').textContent = displayScore;
     document.getElementById('result-title').textContent = r.title;
     document.getElementById('result-desc').textContent = r.desc;
@@ -915,6 +946,16 @@
     const r = results.find(r => displayScore >= r.min && displayScore <= r.max) || results[results.length - 1];
     const text = `【おなにー診断】\n${userName}のセルフウェルネス度は${displayScore}/100点！\n結果：${r.icon}「${r.title}」`;
     window.open('https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(location.href) + '&text=' + encodeURIComponent(text), '_blank');
+  }
+
+  function shareInstagram() {
+    const r = results.find(r => displayScore >= r.min && displayScore <= r.max) || results[results.length - 1];
+    const text = `【おなにー診断】\n${userName}のセルフウェルネス度は${displayScore}/100点！\n結果：${r.icon}「${r.title}」\n\nあなたも試してみて👇\nhttps://ohandajicun-cyber.github.io/sindan/\n\n#おなにー診断 #セルフウェルネス`;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('コピーしました！\nインスタグラムを開いて投稿に貼り付けてね📸');
+    }).catch(() => {
+      prompt('以下をコピーしてインスタに貼り付けてね：', text);
+    });
   }
 </script>
 </body>
