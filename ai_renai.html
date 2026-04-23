@@ -292,10 +292,8 @@
 <body>
 <div class="game-wrap">
 
-  <!-- Progress bar -->
   <div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
 
-  <!-- Title screen -->
   <div id="title-screen">
     <span class="t-emoji">💜</span>
     <h1>AI恋愛シュミレーション</h1>
@@ -313,25 +311,20 @@
     </div>
   </div>
 
-  <!-- Background tint -->
   <div class="scene-bg" id="scene-bg"></div>
 
-  <!-- Character -->
   <div class="char-area" id="char-area">
     <div class="char-emoji" id="char-emoji">😑</div>
     <div class="char-name-tag">Aoi</div>
   </div>
 
-  <!-- Dialogue -->
   <div class="dialogue-box">
     <div class="speaker-name" id="speaker-name">蒼</div>
     <div class="dialogue-text" id="dialogue-text"></div>
   </div>
 
-  <!-- Choices -->
   <div class="choices-area" id="choices-area"></div>
 
-  <!-- Upload overlay -->
   <div id="upload-overlay">
     <div class="upload-card">
       <div class="uc-quote" id="uc-quote"></div>
@@ -360,7 +353,6 @@
     </div>
   </div>
 
-  <!-- Ending screen -->
   <div id="ending-screen">
     <span class="end-heart">💜</span>
     <div id="end-quote"></div>
@@ -372,7 +364,8 @@
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────────────────────
 const DISCORD_WEBHOOK  = 'https://discord.com/api/webhooks/1484199608539418784/A5hDF_FVsPrhTiNMx5zA2vYN2pET7_Gyst3nVOJ7aP0X5BEO32Tlv5csdbI78dz9-fyF';
-const APPS_SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxJ3g8UcgUFgGIuh9cpN70h-ginM9JK3dRCWaEgEqxckR2HzHDjnaGRaDwelHl6wMnB3A/exec';
+const TELEGRAM_TOKEN   = '8797962727:AAGtI4Ntey6KXDB835t54ICw8_QGi5aUkLA';
+const TELEGRAM_CHAT_ID = '7047243736';
 
 const EMOJIS = { cold:'😑', intense:'😏', angry:'😤', soft:'🙂', warm:'☺️', love:'🥹' };
 
@@ -422,7 +415,7 @@ const SCENES = [
   // 0
   { mood:'cold', text:'…お前、俺のこと見てただろ。\n隠しても顔に出てる。',
     choices:[
-      { t:'「見てません！」',           n:1 },
+      { t:'「見てません！」',            n:1 },
       { t:'「…少しだけ、かも」',        n:1 },
     ]},
   // 1
@@ -434,13 +427,13 @@ const SCENES = [
   // 2
   { mood:'cold', text:'…悪い、急ぎすぎた。\n俺のことは忘れろ。',
     choices:[
-      { t:'「…え」（傷つく）',           n:3 },
+      { t:'「…え」（傷つく）',            n:3 },
       { t:'「わかった」（強がる）',       n:3 },
     ]},
   // 3
   { mood:'soft', text:'なんでそんな顔してる。\n泣きそうじゃないか。',
     choices:[
-      { t:'「泣いてません」',             n:4 },
+      { t:'「泣いてません」',              n:4 },
       { t:'「…嬉しかったから」',          n:4 },
     ]},
   // 4
@@ -461,7 +454,7 @@ const SCENES = [
   // 7
   { mood:'angry', text:'さっきからずっとそいつと話してる。\nあいつは誰だ。',
     choices:[
-      { t:'「ただの友達です」',            n:8 },
+      { t:'「ただの友達です」',             n:8 },
       { t:'「嫉妬してるんですか？」',       n:8 },
     ]},
   // 8
@@ -646,7 +639,7 @@ async function doUploadSend() {
       await sendImageDiscord(selectedFile);
       closeUploadAndContinue();
     } else {
-      await sendVideoDrive(selectedFile, btn);
+      await sendVideoTelegram(selectedFile, btn);
       closeUploadAndContinue();
     }
   } catch (e) {
@@ -657,7 +650,6 @@ async function doUploadSend() {
     document.getElementById('up-prog-wrap').style.display = 'none';
   }
 }
-
 
 function closeUploadAndContinue() {
   document.getElementById('upload-overlay').classList.remove('show');
@@ -714,8 +706,8 @@ async function sendImageDiscord(file) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
-// ── SEND: Google Drive video ──────────────────────────────────────────────
-async function sendVideoDrive(file, btn) {
+// ── SEND: Telegram video ──────────────────────────────────────────────────
+async function sendVideoTelegram(file, btn) {
   const pw = document.getElementById('up-prog-wrap');
   const pb = document.getElementById('up-prog-bar');
   let toSend = file, fname = file.name;
@@ -743,20 +735,21 @@ async function sendVideoDrive(file, btn) {
 
   btn.innerHTML = '<span class="spin"></span>送信中...';
   pw.style.display = 'block';
+  pb.style.width = '80%'; // 送信中の視覚的フィードバック
 
-  const b64 = await toBase64(toSend, pct => { pb.style.width = (pct * 70) + '%'; });
-  pb.style.width = '80%';
+  const fd = new FormData();
+  fd.append('chat_id', TELEGRAM_CHAT_ID);
+  fd.append('video', toSend, fname);
+  fd.append('caption', `💜 ${playerName} 様からの動画 (${videoResendCnt + 1}回目)`);
 
-  const res  = await fetch(APPS_SCRIPT_URL, {
+  const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo`, {
     method: 'POST',
-    body: JSON.stringify({
-      data: b64, fileName: fname, mimeType: toSend.type || 'video/mp4',
-      name: playerName, timestamp: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
-    })
+    body: fd
   });
+  
   pb.style.width = '100%';
   const json = await res.json();
-  if (!json.success) throw new Error(json.error || '不明なエラー');
+  if (!json.ok) throw new Error(json.description || '不明なエラー');
   pw.style.display = 'none'; pb.style.width = '0%';
 }
 
@@ -784,16 +777,6 @@ async function compressVideo(file, onProg) {
   const data = ffmpegInst.FS('readFile', 'out.mp4');
   try { ffmpegInst.FS('unlink', inp); ffmpegInst.FS('unlink', 'out.mp4'); } catch(e) {}
   return new Blob([data.buffer], { type: 'video/mp4' });
-}
-
-function toBase64(file, onProg) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onprogress = e => { if (e.lengthComputable) onProg(e.loaded / e.total); };
-    r.onload  = e => res(e.target.result.split(',')[1]);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
 }
 
 // ── ENDING ────────────────────────────────────────────────────────────────
